@@ -1,7 +1,6 @@
 package pers.zr.magic.dao.action;
 
 import pers.zr.magic.dao.constants.ActionMode;
-import pers.zr.magic.dao.runtime.ActionTable;
 
 import java.util.HashMap;
 import java.util.Map;

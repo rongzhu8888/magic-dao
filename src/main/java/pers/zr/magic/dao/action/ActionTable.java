@@ -1,4 +1,4 @@
-package pers.zr.magic.dao.runtime;
+package pers.zr.magic.dao.action;
 
 /**
  * Created by zhurong on 2016-4-28.

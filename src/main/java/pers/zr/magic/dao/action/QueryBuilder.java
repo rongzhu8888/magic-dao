@@ -1,8 +1,7 @@
 package pers.zr.magic.dao.action;
 
 import pers.zr.magic.dao.constants.ActionMode;
-import pers.zr.magic.dao.feature.ShardStrategy;
-import pers.zr.magic.dao.runtime.ActionTable;
+import pers.zr.magic.dao.shard.ShardStrategy;
 
 /**
  * Created by zhurong on 2016-4-28.

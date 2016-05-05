@@ -1,4 +1,4 @@
-package pers.zr.magic.dao.feature;
+package pers.zr.magic.dao.shard;
 
 /**
  *
