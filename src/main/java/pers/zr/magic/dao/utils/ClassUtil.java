@@ -1,5 +1,5 @@
 /**
- * beidou-core-493#com.baidu.beidou.common.utils.ClassUtils.java
+ * beidou-core-493#com.baidu.beidou.common.utils.ClassUtil.java
  * 下午3:40:26 created by Darwin(Tianxin)
  */
 package pers.zr.magic.dao.utils;
@@ -13,21 +13,21 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class ClassUtils {
+public class ClassUtil {
 
     /**
-     * 获取某个类锁指定的泛型参数数组
+     * 获取某个类指定的泛型参数数组
      *
-     * @param c
+     * @param clazz
      *
      * @return
      */
-    public final static Type[] getGenericTypes(Class<?> c) {
+    public final static Type[] getGenericTypes(Class<?> clazz) {
 
-        Class<?> myClass = c;
+        Class<?> myClass = clazz;
 
-        if (!(c.getGenericSuperclass() instanceof ParameterizedType)) {
-            myClass = c.getSuperclass();
+        if (!(clazz.getGenericSuperclass() instanceof ParameterizedType)) {
+            myClass = clazz.getSuperclass();
         }
 
         Type superClass = myClass.getGenericSuperclass();
