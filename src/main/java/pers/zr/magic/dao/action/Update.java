@@ -53,7 +53,13 @@ public class Update extends  ConditionAction {
         if(CollectionUtils.isEmpty(updateFields)) {
             throw new RuntimeException("update fields can not be empty!");
         }
-        StringBuilder sqlBuilder = new StringBuilder("UPDATE ").append(table.getTableName()).append(" SET ");
+
+        String tableName = this.table.getTableName();
+        if(null != this.shardStrategy) {
+            tableName = getShardingTableName();
+        }
+
+        StringBuilder sqlBuilder = new StringBuilder("UPDATE ").append(tableName).append(" SET ");
         List<Object> paramsList = new ArrayList<Object>();
         for(String column : updateFields.keySet()) {
             sqlBuilder.append(column).append("=?,");

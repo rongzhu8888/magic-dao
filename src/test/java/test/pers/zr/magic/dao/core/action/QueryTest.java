@@ -19,17 +19,14 @@ public class QueryTest extends BaseJunit {
 
     @BeforeClass
     public static void generateBuidler() {
-        queryBuilder = new QueryBuilder(table);
+        queryBuilder = new QueryBuilder(table, shardStrategy);
         ActionBuilderContainer.setActionBuilder(queryBuilder);
     }
 
     @Test
     public void testGetSqlAndParams() {
             Query query = queryBuilder.build();
-            query.addCondition(new LessMatcher("user_id", 1000001), ConditionType.AND);
-            query.addCondition(new EqualsMatcher("status", 2), ConditionType.AND);
-            query.addCondition(new LessMatcher("finish_time", "2016-05-03 10:00:00"), ConditionType.OR);
-            query.setQueryFields("pool_id", "points");
+            query.addCondition(new LessMatcher("user_id", 1000001));
 
             System.out.println(query.getSql());
             System.out.println(query.getParams().length);

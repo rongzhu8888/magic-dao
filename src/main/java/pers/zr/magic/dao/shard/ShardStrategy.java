@@ -8,47 +8,32 @@ package pers.zr.magic.dao.shard;
  */
 public class ShardStrategy {
 
-    private int shardCount; //分表（片）数量
+    private int shardingCount; //分表（片）数量
 
-    private String shardColumn; //sharding依赖字段
+    private String shardingColumn; //sharding字段
 
-    private String connectSymbol;
+    private String connector; //连接符
 
-    public ShardStrategy(int shardCount, String shardColumn) {
-        this.shardCount = shardCount;
-        this.shardColumn = shardColumn;
-        this.connectSymbol = "_";
+    public ShardStrategy(int shardingCount, String shardingColumn) {
+        this.shardingCount = shardingCount;
+        this.shardingColumn = shardingColumn;
     }
 
-    public ShardStrategy(int shardCount, String shardColumn, String connectSymbol) {
-        this.shardCount = shardCount;
-        this.shardColumn = shardColumn;
-        this.connectSymbol = connectSymbol;
+    public ShardStrategy(int shardingCount, String shardingColumn, String connector) {
+        this.shardingCount = shardingCount;
+        this.shardingColumn = shardingColumn;
+        this.connector = connector;
     }
 
-    public int getShardCount() {
-        return shardCount;
+    public int getShardingCount() {
+        return shardingCount;
     }
 
-    public void setShardCount(int shardCount) {
-        this.shardCount = shardCount;
+    public String getShardingColumn() {
+        return shardingColumn;
     }
 
-    public String getShardColumn() {
-        return shardColumn;
+    public String getConnector() {
+        return connector;
     }
-
-    public void setShardColumn(String shardColumn) {
-        this.shardColumn = shardColumn;
-    }
-
-    public String getConnectSymbol() {
-        return connectSymbol;
-    }
-
-    public void setConnectSymbol(String connectSymbol) {
-        this.connectSymbol = connectSymbol;
-    }
-
-
 }

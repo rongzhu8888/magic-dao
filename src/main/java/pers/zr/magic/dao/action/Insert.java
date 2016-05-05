@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.util.CollectionUtils;
 import pers.zr.magic.dao.constants.ActionMode;
+import pers.zr.magic.dao.utils.ShardingUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,8 @@ public class Insert extends Action {
     public void setInsertFields(Map<String, Object> insertFields) {
         this.insertFields = insertFields;
     }
+
+    private String shardingTableName = null;
 
     @Override
     public String getSql() {
@@ -55,12 +58,24 @@ public class Insert extends Action {
             throw new RuntimeException("insert fields can not be empty!");
         }
 
-        StringBuilder sqlBuilder = new StringBuilder("INSERT INTO ").append(table.getTableName()).append(" (");
         List<Object> paramsList = new ArrayList<Object>(insertFields.size());
+        StringBuilder sqlBuilder = new StringBuilder(" (");
+
 
         for(String column : insertFields.keySet()) {
             sqlBuilder.append(column).append(",");
-            paramsList.add(insertFields.get(column));
+            Object value = insertFields.get(column);
+            paramsList.add(value);
+            if(this.shardStrategy != null && shardStrategy.getShardingColumn().equalsIgnoreCase(column)) {
+
+                this.shardingTableName = table.getTableName() + shardStrategy.getConnector()
+                        + ShardingUtil.getShardingTableSuffix(String.valueOf(value), shardStrategy.getShardingCount());
+
+            }
+        }
+
+        if(shardStrategy != null && this.shardingTableName == null) {
+            throw new RuntimeException("Shard error: can not find shard column from conditions!");
         }
 
         sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(",")).append(") VALUES (");
@@ -69,9 +84,14 @@ public class Insert extends Action {
         }
         sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(",")).append(")");
 
-        this.sql = sqlBuilder.toString();
+        String tableName = this.table.getTableName();
+        if(null != this.shardStrategy) {
+            tableName = this.shardingTableName;
+        }
+        this.sql = "INSERT INTO " + tableName + sqlBuilder.toString();
         this.params = paramsList.toArray();
 
 
     }
+
 }

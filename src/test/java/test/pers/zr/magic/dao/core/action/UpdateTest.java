@@ -6,6 +6,7 @@ import pers.zr.magic.dao.action.ActionBuilderContainer;
 import pers.zr.magic.dao.action.Update;
 import pers.zr.magic.dao.action.UpdateBuilder;
 import pers.zr.magic.dao.constants.ConditionType;
+import pers.zr.magic.dao.matcher.EqualsMatcher;
 import pers.zr.magic.dao.matcher.LikeMatcher;
 import test.pers.zr.magic.dao.core.BaseJunit;
 
@@ -22,7 +23,7 @@ public class UpdateTest extends BaseJunit {
 
     @BeforeClass
     public static void generateDeleteBuilder() {
-        updateBuilder = new UpdateBuilder(table);
+        updateBuilder = new UpdateBuilder(table, shardStrategy);
         ActionBuilderContainer.setActionBuilder(updateBuilder);
     }
 
@@ -30,11 +31,10 @@ public class UpdateTest extends BaseJunit {
     public void testGetSqlAndParams() {
 
         Update update = updateBuilder.build();
-        update.addCondition(new LikeMatcher("prize_name", "_ttt"), ConditionType.AND);
+        update.addCondition(new EqualsMatcher("user_id", 2304820800001L));
 
         Map<String, Object> updateFields = new HashMap<String, Object>();
-        updateFields.put("prize_size", 1000);
-        updateFields.put("update_time", new Date());
+        updateFields.put("order_status", 0);
         update.setUpdateFields(updateFields);
 
         System.out.println(update.getSql());

@@ -2,100 +2,82 @@ package pers.zr.magic.dao.action;
 
 import org.springframework.util.CollectionUtils;
 import pers.zr.magic.dao.constants.ConditionType;
+import pers.zr.magic.dao.constants.MatchType;
 import pers.zr.magic.dao.matcher.Matcher;
+import pers.zr.magic.dao.utils.ShardingUtil;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by peter.zhu on 2016/4/30.
  */
 public abstract class ConditionAction extends Action {
 
-    private Collection<Matcher> andConditions = new ArrayList<Matcher>();
-
-    private Collection<Matcher> orConditions = new ArrayList<Matcher>();
+    private Collection<Matcher> conditions = new ArrayList<Matcher>();
 
     private String conSql = null;
-    private List<Object> conParams = new ArrayList<Object>(0);
+    private List<Object> conParams = null;
+    private String shardingTableName = null;
 
-    public <T extends ConditionAction>T addCondition(Matcher matcher, ConditionType type) {
-
-        if(null == matcher) {
-            throw new IllegalArgumentException("Invalid parameter: matcher can not be null!");
-        }
-
-        if(null == type) {
-            throw new IllegalArgumentException("Invalid parameter: type can not be null!");
-        }
-
-        if(ConditionType.AND == type) {
-
-            andConditions.add(matcher);
-
-        }else if(ConditionType.OR == type) {
-
-            orConditions.add(matcher);
-
-        }else {
-
-            throw new IllegalArgumentException("Invalid ConditionType, expect [AND] or [OR]");
-
-        }
-
+    public <T extends ConditionAction>T addCondition(Matcher matcher) {
+        conditions.add(matcher);
         return (T) this;
     }
 
     public List<Object> getConParams() {
-        if(this.conParams.size() == 0) {
-            analysisCondtions();
+        if(null == this.conParams) {
+            analysisConditions();
         }
-        return this.conParams;
+        return this.conParams != null ? this.conParams : new ArrayList<Object>(0);
     }
 
     public String getConSql() {
         if(null == this.conSql) {
-            analysisCondtions();
+            analysisConditions();
         }
         return this.conSql != null ? this.conSql : "";
     }
 
-    private void analysisCondtions() {
+    public String getShardingTableName() {
+        if(null == shardingTableName) {
+            analysisConditions();
+        }
+        return this.shardingTableName;
+    }
+
+
+    private void analysisConditions() {
 
         StringBuilder conditionSqlBuilder = new StringBuilder();
-        if(CollectionUtils.isEmpty(andConditions) && CollectionUtils.isEmpty(orConditions)) {
+        if(CollectionUtils.isEmpty(conditions)){
             this.conSql = null;
 
         }else {
             conditionSqlBuilder.append("WHERE ");
-            List<Object> conParamsList = new ArrayList<Object>(andConditions.size() + orConditions.size());
+            List<Object> conParamsList = new ArrayList<Object>(conditions.size());
 
-            if(!CollectionUtils.isEmpty(andConditions)) {
+            for(Matcher matcher : conditions) {
+                conditionSqlBuilder.append(ConditionType.AND).append(" ")
+                        .append(matcher.getColumn()).append(" ")
+                        .append(matcher.getMatchType().value).append(" ? ");
 
-                for(Matcher matcher : andConditions) {
-                    conditionSqlBuilder.append(ConditionType.AND).append(" ")
-                            .append(matcher.getColumn()).append(" ")
-                            .append(matcher.getMatchType().value).append(" ? ");
+                convertMatcher(conParamsList, matcher);
 
-                    convertMatcher(conParamsList, matcher);
+                //具有分表策略时，计算实际表名
+                if(null != shardStrategy
+                        && matcher.getColumn().equalsIgnoreCase(shardStrategy.getShardingColumn())) {
+
+                    this.shardingTableName = this.table.getTableName()
+                            + this.shardStrategy.getConnector()
+                            + ShardingUtil.getShardingTableSuffix(String.valueOf(matcher.getValues()[0]), shardStrategy.getShardingCount());
                 }
             }
-            if(!CollectionUtils.isEmpty(orConditions)) {
 
-                for(Matcher matcher : orConditions) {
-                    conditionSqlBuilder.append(ConditionType.OR).append(" ")
-                            .append(matcher.getColumn()).append(" ")
-                            .append(matcher.getMatchType().value).append(" ? ");
-
-                    convertMatcher(conParamsList, matcher);
-                }
-
+            if(shardStrategy != null && this.shardingTableName == null) {
+                throw new RuntimeException("Shard error: can not find shard column from conditions!");
             }
 
             this.conSql = conditionSqlBuilder.toString().replace("WHERE AND", "WHERE");
-            this.conSql = this.conSql.replace("WHERE OR", "WHERE");
             this.conParams = conParamsList;
 
         }

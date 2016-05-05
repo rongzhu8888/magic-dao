@@ -44,9 +44,11 @@ public class BaseJunit {
         dataSource.setDataSource(c3p0);
 
         table = new ActionTable();
-        table.setTableName("prize_pool_instances");
-        table.setKeys(new String[]{"id"});
-        table.setColumns(new String[]{"id", "pool_size","winning_rule_id", "create_time", "update_time","total_lottery_count", "total_received_points","total_paied_points"});
+        table.setTableName("tab_order");
+        table.setKeys(new String[]{"order_id"});
+        table.setColumns(new String[]{"order_id", "user_id","create_time", "update_time", "order_status"});
+
+        shardStrategy = new ShardStrategy(32, "user_id", "_");
 
 
     }

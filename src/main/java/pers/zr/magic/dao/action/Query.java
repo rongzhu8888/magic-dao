@@ -31,8 +31,13 @@ public class Query extends ConditionAction {
                 targetFieldsStr = "*";
             }
 
+            String tableName = this.table.getTableName();
+            if(null != this.shardStrategy) {
+                tableName = getShardingTableName();
+            }
+
             this.sql = (new StringBuilder()).append("SELECT ").append(targetFieldsStr).append(" FROM ")
-                    .append(table.getTableName()).append(" ").append(getConSql()).toString();
+                    .append(tableName).append(" ").append(getConSql()).toString();
 
             if (log.isDebugEnabled()) {
                 log.debug("Query SQL: ###" + sql + "###");

@@ -19,7 +19,7 @@ public class DeleteTest extends BaseJunit{
 
     @BeforeClass
     public static void generateDeleteBuilder() {
-        deleteBuilder = new DeleteBuilder(table);
+        deleteBuilder = new DeleteBuilder(table, shardStrategy);
         ActionBuilderContainer.setActionBuilder(deleteBuilder);
     }
 
@@ -27,9 +27,7 @@ public class DeleteTest extends BaseJunit{
     @Test
     public void testGetSqlAndParams() {
         Delete delete = deleteBuilder.build();
-        delete.addCondition(new LessMatcher("user_id", 1000001), ConditionType.AND);
-        delete.addCondition(new EqualsMatcher("status", 2), ConditionType.AND);
-        delete.addCondition(new LessMatcher("finish_time", "2016-05-03 10:00:00"), ConditionType.OR);
+        delete.addCondition(new EqualsMatcher("user_id", 100000010099L));
         System.out.println(delete.getSql());
         System.out.println(delete.getParams().length);
 

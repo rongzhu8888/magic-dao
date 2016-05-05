@@ -1,6 +1,7 @@
 package pers.zr.magic.dao.action;
 
 import pers.zr.magic.dao.constants.ActionMode;
+import pers.zr.magic.dao.shard.Shard;
 import pers.zr.magic.dao.shard.ShardStrategy;
 
 /**

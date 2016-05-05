@@ -20,7 +20,7 @@ public class InsertTest extends BaseJunit {
 
     @BeforeClass
     public static void generateBuidler() {
-        insertBuilder = new InsertBuilder(table);
+        insertBuilder = new InsertBuilder(table, shardStrategy);
         ActionBuilderContainer.setActionBuilder(insertBuilder);
     }
 
@@ -30,9 +30,10 @@ public class InsertTest extends BaseJunit {
         Insert insert = insertBuilder.build();
 
         Map<String, Object> fields = new HashMap<String, Object>();
-        fields.put("prize_id", 1111);
-        fields.put("prize_name", "test");
+        fields.put("order_id", 1111110234234929L);
+        fields.put("user_id", 100000010099L);
         fields.put("create_time", new Date());
+        fields.put("order_status", 1);
 
         insert.setInsertFields(fields);
 
