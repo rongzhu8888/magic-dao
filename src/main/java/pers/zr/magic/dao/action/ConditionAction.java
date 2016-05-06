@@ -24,21 +24,21 @@ public abstract class ConditionAction extends Action {
         return (T) this;
     }
 
-    public List<Object> getConParams() {
+    protected List<Object> getConParams() {
         if(null == this.conParams) {
             analysisConditions();
         }
         return this.conParams != null ? this.conParams : new ArrayList<Object>(0);
     }
 
-    public String getConSql() {
+    protected String getConSql() {
         if(null == this.conSql) {
             analysisConditions();
         }
         return this.conSql != null ? this.conSql : "";
     }
 
-    public String getShardingTableName() {
+    protected String getShardingTableName() {
         if(null == shardingTableName) {
             analysisConditions();
         }
@@ -68,7 +68,7 @@ public abstract class ConditionAction extends Action {
                         && matcher.getColumn().equalsIgnoreCase(shardStrategy.getShardingColumn())) {
 
                     this.shardingTableName = this.table.getTableName()
-                            + this.shardStrategy.getConnector()
+                            + this.shardStrategy.getSeparator()
                             + ShardingUtil.getShardingTableSuffix(String.valueOf(matcher.getValues()[0]), shardStrategy.getShardingCount());
                 }
             }

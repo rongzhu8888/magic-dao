@@ -68,7 +68,7 @@ public class Insert extends Action {
             paramsList.add(value);
             if(this.shardStrategy != null && shardStrategy.getShardingColumn().equalsIgnoreCase(column)) {
 
-                this.shardingTableName = table.getTableName() + shardStrategy.getConnector()
+                this.shardingTableName = table.getTableName() + shardStrategy.getSeparator()
                         + ShardingUtil.getShardingTableSuffix(String.valueOf(value), shardStrategy.getShardingCount());
 
             }

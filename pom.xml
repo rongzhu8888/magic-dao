@@ -105,6 +105,19 @@
         </plugins>
     </build>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>magic-dao</name>
+            <url>http://nexus.idc.xiwanglife.com/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>releases</id>
+            <name>magic-dao</name>
+            <url>http://nexus.idc.xiwanglife.com/nexus/content/repositories/releases/</url>
+        </repository>
+    </distributionManagement>
+
 
 
 </project>

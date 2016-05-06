@@ -12,17 +12,12 @@ public class ShardStrategy {
 
     private String shardingColumn; //sharding字段
 
-    private String connector; //连接符
+    private String separator; //连接符
 
-    public ShardStrategy(int shardingCount, String shardingColumn) {
+    public ShardStrategy(int shardingCount, String shardingColumn, String separator) {
         this.shardingCount = shardingCount;
         this.shardingColumn = shardingColumn;
-    }
-
-    public ShardStrategy(int shardingCount, String shardingColumn, String connector) {
-        this.shardingCount = shardingCount;
-        this.shardingColumn = shardingColumn;
-        this.connector = connector;
+        this.separator = separator;
     }
 
     public int getShardingCount() {
@@ -33,7 +28,7 @@ public class ShardStrategy {
         return shardingColumn;
     }
 
-    public String getConnector() {
-        return connector;
+    public String getSeparator() {
+        return separator;
     }
 }

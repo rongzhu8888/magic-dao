@@ -15,13 +15,7 @@ import java.util.Set;
 
 public class ClassUtil {
 
-    /**
-     * 获取某个类指定的泛型参数数组
-     *
-     * @param clazz
-     *
-     * @return
-     */
+
     public final static Type[] getGenericTypes(Class<?> clazz) {
 
         Class<?> myClass = clazz;
@@ -35,13 +29,6 @@ public class ClassUtil {
         return type.getActualTypeArguments();
     }
 
-    /**
-     * 获取一个类的所有字段
-     *
-     * @param entityClass
-     *
-     * @return
-     */
     public static Set<Field> getAllFiled(Class<?> entityClass) {
 
         // 获取本类的所有字段
@@ -63,13 +50,7 @@ public class ClassUtil {
         return fs;
     }
 
-    /**
-     * 获取一个类的所有方法
-     *
-     * @param entityClass
-     *
-     * @return
-     */
+
     public static Set<Method> getAllMethod(Class<?> entityClass) {
 
         // 获取本类的所有的方法
@@ -91,13 +72,6 @@ public class ClassUtil {
         return ms;
     }
 
-    /**
-     * 将方法中非static的public方法获取到
-     *
-     * @param ms
-     *
-     * @return
-     */
     public static Map<String, Method> filter2Map(Set<Method> ms) {
 
         Map<String, Method> map = new HashMap<String, Method>();
@@ -130,12 +104,7 @@ public class ClassUtil {
         return map;
     }
 
-    /**
-     * 将from的属性copy到to中
-     *
-     * @param from
-     * @param to   下午4:30:58 created by Darwin(Tianxin)
-     */
+
     public final static void copyProperties(Object from, Object to) {
 
         Set<Field> fromSet = getAllFiled(from.getClass());
@@ -169,14 +138,6 @@ public class ClassUtil {
 
     }
 
-    /**
-     * 获取一个类的field
-     *
-     * @param field
-     * @param clazz
-     *
-     * @return 下午3:01:19 created by Darwin(Tianxin)
-     */
     public static Field getFieldFromClass(String field, Class<? extends Object> clazz) {
         try {
             return clazz.getDeclaredField(field);
@@ -189,8 +150,6 @@ public class ClassUtil {
         return null;
     }
 
-    public final static boolean isBaiduClass(Class<?> clazz) {
-        Package pkg = clazz.getPackage();
-        return pkg != null && pkg.getName().startsWith("com.baidu.");
-    }
+
+
 }

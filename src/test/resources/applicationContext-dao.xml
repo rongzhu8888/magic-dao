@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:tx="http://www.springframework.org/schema/tx" xmlns:context="http://www.springframework.org/schema/context"
+
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+     http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+     http://www.springframework.org/schema/tx
+     http://www.springframework.org/schema/tx/spring-tx-4.0.xsd
+     http://www.springframework.org/schema/context
+     http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+	<context:property-placeholder location="classpath:mysql.properties"/>
+
+	<bean id="master" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+		<property name="user" value="${mysql.username}" />
+		<property name="password" value="${mysql.password}" />
+		<property name="driverClass" value="${mysql.driver_class}" />
+		<property name="jdbcUrl" value="${mysql.url}" />
+		<property name="maxPoolSize" value="${mysql.maxPoolSize}" />
+		<property name="minPoolSize" value="${mysql.minPoolSize}" />
+		<property name="initialPoolSize" value="${mysql.initialPoolSize}" />
+		<property name="maxIdleTime" value="${mysql.maxIdleTime}" />
+		<property name="checkoutTimeout" value="${mysql.checkoutTimeout}" />
+		<property name="acquireIncrement" value="${mysql.acquireIncrement}" />
+		<property name="acquireRetryAttempts" value="${mysql.acquireRetryAttempts}" />
+		<property name="acquireRetryDelay" value="${mysql.acquireRetryDelay}" />
+		<property name="autoCommitOnClose" value="${mysql.autoCommitOnClose}" />
+		<property name="automaticTestTable" value="${mysql.automaticTestTable}" />
+		<property name="breakAfterAcquireFailure" value="${mysql.breakAfterAcquireFailure}" />
+		<property name="idleConnectionTestPeriod" value="${mysql.idleConnectionTestPeriod}" />
+		<property name="maxStatements" value="${mysql.maxStatements}" />
+		<property name="maxStatementsPerConnection" value="${mysql.maxStatementsPerConnection}" />
+	</bean>
+
+	<bean id="magicDataSource" class="pers.zr.magic.dao.MagicSingleDataSource">
+		<property name="dataSource" ref="master" />
+	</bean>
+
+	<bean id="appDao" class="demo.pers.zr.magic.dao.app.MagicAppDaoImpl" >
+		<property name="dataSource" ref="magicDataSource" />
+
+	</bean>
+
+	<!-- 事务管理器 -->
+	<bean id="transactionManager"
+		  class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="master" />
+	</bean>
+	<!-- 事务注解驱动，标注@Transactional的类和方法将具有事务性 -->
+	<tx:annotation-driven transaction-manager="transactionManager" />
+
+</beans>
