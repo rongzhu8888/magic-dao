@@ -3,6 +3,7 @@ package pers.zr.magic.dao.mapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.RowMapper;
+import pers.zr.magic.dao.constants.MethodType;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;

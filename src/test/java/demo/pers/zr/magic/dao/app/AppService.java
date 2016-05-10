@@ -3,6 +3,8 @@ package demo.pers.zr.magic.dao.app;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import pers.zr.magic.dao.constants.OrderType;
+import pers.zr.magic.dao.matcher.EqualsMatcher;
+import pers.zr.magic.dao.matcher.LessMatcher;
 import pers.zr.magic.dao.order.Order;
 import pers.zr.magic.dao.page.PageModel;
 
@@ -28,15 +30,22 @@ public class AppService {
         //test getByKey
         dao.get(2L);
 
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("group_id", 2);
+        System.out.println(dao.getCount(map));
+
+        Map<String, Object> valueMap = new HashMap<>();
+        valueMap.put("group_id", 4);
+        dao.update(valueMap, new LessMatcher("update_time", new Date()));
 
         //test insert
-        AppEntity entity = new AppEntity();
-//        entity.setAppId("hdb-laba");
-        entity.setAppDesc("拉霸");
-        entity.setAppName("hdb-laba-");
-        entity.setGroupId("2");
-        entity.setCreateTime(new Date());
-        System.out.println(dao.insertAndGetKey(entity));
+//        AppEntity entity = new AppEntity();
+////        entity.setAppId("hdb-laba");
+//        entity.setAppDesc("拉霸");
+//        entity.setAppName("hdb-laba-");
+//        entity.setGroupId("2");
+//        entity.setCreateTime(new Date());
+//        System.out.println(dao.insertAndGetKey(entity));
 
 
 

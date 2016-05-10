@@ -15,7 +15,7 @@ import pers.zr.magic.dao.annotation.Shard;
 import pers.zr.magic.dao.annotation.Table;
 import pers.zr.magic.dao.constants.ActionMode;
 import pers.zr.magic.dao.mapper.GenericMapper;
-import pers.zr.magic.dao.mapper.MethodType;
+import pers.zr.magic.dao.constants.MethodType;
 import pers.zr.magic.dao.matcher.EqualsMatcher;
 import pers.zr.magic.dao.matcher.Matcher;
 import pers.zr.magic.dao.order.Order;
@@ -59,7 +59,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     private List<Field> keyFields;
 
     /** 表中与实体属性对应的字段列表*/
-    private List<String> queryColumns;
+    private List<String> tableColumns;
 
     /** 表中与实体属性对应且需要insert的字段列表*/
     private List<String> toInsertColumns;
@@ -104,7 +104,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         //获取列、主键
         keyColumns = new ArrayList<String>();
         keyFields = new ArrayList<Field>();
-        queryColumns = new ArrayList<String>();
+        tableColumns = new ArrayList<String>();
         toInsertColumns= new ArrayList<String>();
 
         for(Field field : fields) {
@@ -115,7 +115,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
                 keyColumns.add(keyAnnotation.column());
                 keyFields.add(field);
 
-                queryColumns.add(keyAnnotation.column());
+                tableColumns.add(keyAnnotation.column());
 
                 //非自增主键值需要写入
                 if(!keyAnnotation.autoIncrement()) {
@@ -125,7 +125,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
                 GenericMapper.setFieldWithColumn(entityClass, keyAnnotation.column(), field);
 
             }else if(columnAnnotation != null) {
-                queryColumns.add(columnAnnotation.value());
+                tableColumns.add(columnAnnotation.value());
 
                 //非只读字段需要写入
                 if(!columnAnnotation.readOnly()) {
@@ -156,6 +156,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         table = new ActionTable();
         table.setTableName(tableAnnotation.name());
         table.setKeys(keyColumns.toArray(new String[keyColumns.size()]));
+        table.setColumns(tableColumns.toArray(new String[tableColumns.size()]));
 
         //获取待更新的字段=【writtenColumns】-【keyColumns】
         toUpdateColumns = new ArrayList<String>();
@@ -183,8 +184,8 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     @Override
     public ENTITY get(KEY key) {
 
-        Query query = getQueryBuilder().build();
-        query.setQueryFields(queryColumns);
+        Query query = getBuilder(ActionMode.QUERY).build();
+        query.setQueryFields(tableColumns);
         query.addConditions(getKeyConditions(key));
 
         List<ENTITY> list = dataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
@@ -195,7 +196,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     @Override
     public void insert(ENTITY entity){
 
-        Insert insert = getInsertBuilder().build();
+        Insert insert = getBuilder(ActionMode.INSERT).build();
         insert.setInsertFields(getDataMapByColumns(toInsertColumns, entity));
 
         dataSource.getJdbcTemplate(ActionMode.INSERT).update(insert.getSql(), insert.getParams());
@@ -205,7 +206,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     @Override
     public Long insertAndGetKey(ENTITY entity){
 
-        Insert insert = getInsertBuilder().build();
+        Insert insert = getBuilder(ActionMode.INSERT).build();
         Map<String, Object> dataMap = getDataMapByColumns(toInsertColumns, entity);
         insert.setInsertFields(dataMap);
         String sql = insert.getSql();
@@ -241,17 +242,8 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
 
     @Override
     public void update(ENTITY entity) {
-        UpdateBuilder updateBuilder = ActionBuilderContainer.getActionBuilder(table, ActionMode.UPDATE);
-        if(null == updateBuilder) {
-            if(null == shardStrategy) {
-                updateBuilder = new UpdateBuilder(table);
-            }else {
-                updateBuilder = new UpdateBuilder(table, shardStrategy);
-            }
-            ActionBuilderContainer.setActionBuilder(updateBuilder);
-        }
 
-        Update update = updateBuilder.build();
+        Update update = getBuilder(ActionMode.UPDATE).build();
         update.addConditions(getKeyConditionsFomEntity(entity));
         update.setUpdateFields(getDataMapByColumns(toUpdateColumns, entity));
 
@@ -264,21 +256,34 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     @Override
     public void delete(KEY key){
 
-        DeleteBuilder deleteBuilder = ActionBuilderContainer.getActionBuilder(table, ActionMode.DELETE);
-        if(null == deleteBuilder) {
-            if(null == shardStrategy) {
-                deleteBuilder = new DeleteBuilder(table);
-            }else {
-                deleteBuilder = new DeleteBuilder(table, shardStrategy);
-            }
-            ActionBuilderContainer.setActionBuilder(deleteBuilder);
-        }
-
-        Delete delete = deleteBuilder.build();
+        Delete delete = getBuilder(ActionMode.DELETE).build();
         delete.addConditions(getKeyConditions(key));
 
         dataSource.getJdbcTemplate(ActionMode.DELETE).update(delete.getSql(), delete.getParams());
 
+    }
+
+    @Override
+    public void delete(Matcher...conditions) {
+
+        Delete delete = getBuilder(ActionMode.DELETE).build();
+        if(null != conditions && conditions.length >0) {
+            delete.addConditions(Arrays.asList(conditions));
+        }
+
+        dataSource.getJdbcTemplate(ActionMode.DELETE).update(delete.getSql(), delete.getParams());
+    }
+
+    @Override
+    public void update(Map<String, Object> valueMap, Matcher...conditions) {
+
+        Update update = getBuilder(ActionMode.UPDATE).build();
+        if(null != conditions && conditions.length >0) {
+            update.addConditions(Arrays.asList(conditions));
+        }
+        update.setUpdateFields(valueMap);
+
+        dataSource.getJdbcTemplate(ActionMode.UPDATE).update(update.getSql(), update.getParams());
     }
 
     @Override
@@ -290,8 +295,8 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     @Override
     public List<ENTITY> query(Map<String, Object> conditions, PageModel pageModel, Order... orders) {
 
-        Query query = getQueryBuilder().build();
-        query.setQueryFields(queryColumns);
+        Query query = getBuilder(ActionMode.QUERY).build();
+        query.setQueryFields(tableColumns);
         for(Map.Entry<String, Object> entry : conditions.entrySet()) {
             query.addCondition(new EqualsMatcher(entry.getKey(), entry.getValue()));
         }
@@ -302,13 +307,25 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         return CollectionUtils.isEmpty(list) ? new ArrayList<ENTITY>() : list;
     }
 
+    @Override
+    public Long getCount(Map<String, Object> conditions) {
+
+        Query query = getBuilder(ActionMode.QUERY).build();
+        query.setQueryFields(Arrays.asList("COUNT(1)"));
+        for(Map.Entry<String, Object> entry : conditions.entrySet()) {
+            query.addCondition(new EqualsMatcher(entry.getKey(), entry.getValue()));
+        }
+
+        return dataSource.getJdbcTemplate(ActionMode.QUERY).queryForObject(query.getSql(), query.getParams(), Long.class);
+    }
+
     private List<Matcher> getKeyConditions(KEY key) {
         List<Matcher> matcherList = new ArrayList<Matcher>();
 
         if(CollectionUtils.isEmpty(keyColumns)) {
             throw new RuntimeException("no key columns found!");
         }
-
+        //TODO 待优化（简单类型直接取key值，复杂对象类型key，通过反射调用）
         if(keyColumns.size() == 1) { //单一主键,直接取key值
             matcherList.add(new EqualsMatcher(table.getKeys()[0], key));
         }else if(keyColumns.size() > 1){ //组合主键
@@ -386,32 +403,24 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         return dataMap;
     }
 
-    private QueryBuilder getQueryBuilder() {
-        QueryBuilder queryBuilder = ActionBuilderContainer.getActionBuilder(table, ActionMode.QUERY);
-        if(null == queryBuilder) {
-            if(null == shardStrategy) {
-                queryBuilder = new QueryBuilder(table);
+    private ActionBuilder getBuilder(ActionMode actionMode) {
+        ActionBuilder builder = ActionBuilderContainer.getActionBuilder(table, actionMode);
+        if(null == builder) {
+            if(ActionMode.QUERY.equals(actionMode)) {
+                builder = new QueryBuilder(table, shardStrategy);
+            }else if(ActionMode.INSERT.equals(actionMode)) {
+                builder = new InsertBuilder(table, shardStrategy);
+            }else if(ActionMode.DELETE.equals(actionMode)) {
+                builder = new DeleteBuilder(table, shardStrategy);
+            }else if(ActionMode.UPDATE.equals(actionMode)) {
+                builder = new UpdateBuilder(table, shardStrategy);
             }else {
-                queryBuilder = new QueryBuilder(table, shardStrategy);
+                throw new RuntimeException("Invalid action mode!");
             }
-            ActionBuilderContainer.setActionBuilder(queryBuilder);
         }
-
-        return queryBuilder;
+        ActionBuilderContainer.setActionBuilder(builder);
+        return builder;
     }
 
-    private InsertBuilder getInsertBuilder() {
-        InsertBuilder insertBuilder = ActionBuilderContainer.getActionBuilder(table, ActionMode.INSERT);
-        if(null == insertBuilder) {
-            if(null == shardStrategy) {
-                insertBuilder = new InsertBuilder(table);
-            }else {
-                insertBuilder = new InsertBuilder(table, shardStrategy);
-            }
-            ActionBuilderContainer.setActionBuilder(insertBuilder);
-        }
-
-       return insertBuilder;
-    }
 
 }

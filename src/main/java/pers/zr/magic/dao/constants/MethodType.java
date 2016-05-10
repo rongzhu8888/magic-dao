@@ -1,4 +1,4 @@
-package pers.zr.magic.dao.mapper;
+package pers.zr.magic.dao.constants;
 
 /**
  * Created by zhurong on 2016-5-6.
