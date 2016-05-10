@@ -13,6 +13,6 @@ public @interface Key {
 
     String column();
 
-    boolean autoIncreament() default false;
+    boolean autoIncrement() default false;
 
 }

@@ -31,7 +31,7 @@ public class Insert extends Action {
         if(null == this.sql) {
             parse();
             if (log.isDebugEnabled()) {
-                log.debug("Insert SQL: ###" + sql + "###");
+                log.debug("### Insert SQL: " + sql + "###");
             }
         }
         return this.sql;
@@ -75,7 +75,7 @@ public class Insert extends Action {
         }
 
         if(shardStrategy != null && this.shardingTableName == null) {
-            throw new RuntimeException("Shard error: can not find shard column from conditions!");
+            throw new RuntimeException("Shard error: can not find sharding column from insert data!");
         }
 
         sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(",")).append(") VALUES (");

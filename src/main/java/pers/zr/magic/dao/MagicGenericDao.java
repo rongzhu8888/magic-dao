@@ -3,7 +3,10 @@ package pers.zr.magic.dao;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.util.CollectionUtils;
 import pers.zr.magic.dao.action.*;
 import pers.zr.magic.dao.annotation.Column;
@@ -15,6 +18,8 @@ import pers.zr.magic.dao.mapper.GenericMapper;
 import pers.zr.magic.dao.mapper.MethodType;
 import pers.zr.magic.dao.matcher.EqualsMatcher;
 import pers.zr.magic.dao.matcher.Matcher;
+import pers.zr.magic.dao.order.Order;
+import pers.zr.magic.dao.page.PageModel;
 import pers.zr.magic.dao.shard.ShardStrategy;
 import pers.zr.magic.dao.utils.ClassUtil;
 
@@ -23,6 +28,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -38,18 +46,34 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         this.dataSource = dataSource;
     }
 
+    /** 实体类 */
     private Class<ENTITY> entityClass;
 
+    /** 主键类 */
     private Class<KEY> keyClass;
 
-    private List<String> keys;
-    private List<Field> keyFields;
-    private List<String> columns;
+    /** 表中与实体主键属性对应的字段列表 */
+    private List<String> keyColumns;
 
+    /** 实体中主键属性列表*/
+    private List<Field> keyFields;
+
+    /** 表中与实体属性对应的字段列表*/
+    private List<String> queryColumns;
+
+    /** 表中与实体属性对应且需要insert的字段列表*/
+    private List<String> toInsertColumns;
+
+    /** 表中与实体属性对应且需要update的字段列表*/
+    private List<String> toUpdateColumns;
+
+    /** 表 */
     private ActionTable table;
 
+    /** 分表策略 */
     private ShardStrategy shardStrategy;
 
+    /** 数据映射对象 */
     protected RowMapper<ENTITY> rowMapper;
 
 
@@ -64,37 +88,50 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         //获取实体类对应的表
         Table tableAnnotation = entityClass.getAnnotation(Table.class);
         if(tableAnnotation == null) {
-            throw new RuntimeException("Class [" + entityClass.getName() +"] must be annotated with @Table");
+            throw new RuntimeException("Class [" + entityClass.getName() +"] must be annotated with @Table!");
         }
 
         Set<Field> fields = ClassUtil.getAllFiled(entityClass);
         if(CollectionUtils.isEmpty(fields)) {
-            throw new RuntimeException("Class [" + entityClass.getName() +"] has no fields");
+            throw new RuntimeException("Class [" + entityClass.getName() +"] has no fields!");
         }
 
         Set<Method> methods = ClassUtil.getAllMethod(entityClass);
         if(CollectionUtils.isEmpty(methods)) {
-            throw new RuntimeException("Class [" + entityClass.getName() +"] has no methods");
+            throw new RuntimeException("Class [" + entityClass.getName() +"] has no methods!");
         }
 
         //获取列、主键
-        keys = new ArrayList<String>();
+        keyColumns = new ArrayList<String>();
         keyFields = new ArrayList<Field>();
-        columns = new ArrayList<String>();
+        queryColumns = new ArrayList<String>();
+        toInsertColumns= new ArrayList<String>();
 
-        Map<String, Field> columnAndFieldMap = new HashMap<String, Field>();
         for(Field field : fields) {
 
             Key keyAnnotation = field.getAnnotation(Key.class);
             Column columnAnnotation = field.getAnnotation(Column.class);
             if(null != keyAnnotation) {
-                keys.add(keyAnnotation.column());
+                keyColumns.add(keyAnnotation.column());
                 keyFields.add(field);
-                columns.add(keyAnnotation.column());
-                columnAndFieldMap.put(keyAnnotation.column(), field);
+
+                queryColumns.add(keyAnnotation.column());
+
+                //非自增主键值需要写入
+                if(!keyAnnotation.autoIncrement()) {
+                    toInsertColumns.add(keyAnnotation.column());
+                }
+
+                GenericMapper.setFieldWithColumn(entityClass, keyAnnotation.column(), field);
+
             }else if(columnAnnotation != null) {
-                columns.add(columnAnnotation.value());
-                columnAndFieldMap.put(columnAnnotation.value(), field);
+                queryColumns.add(columnAnnotation.value());
+
+                //非只读字段需要写入
+                if(!columnAnnotation.readOnly()) {
+                    toInsertColumns.add(columnAnnotation.value());
+                }
+                GenericMapper.setFieldWithColumn(entityClass, columnAnnotation.value(), field);
             }
 
             //获取各属性对应的SET\GET方法
@@ -118,9 +155,18 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         }
         table = new ActionTable();
         table.setTableName(tableAnnotation.name());
-        table.setKeys(keys.toArray(new String[keys.size()]));
+        table.setKeys(keyColumns.toArray(new String[keyColumns.size()]));
 
-        rowMapper = new GenericMapper<ENTITY>(entityClass, columnAndFieldMap);
+        //获取待更新的字段=【writtenColumns】-【keyColumns】
+        toUpdateColumns = new ArrayList<String>();
+        for(String column : toInsertColumns) {
+            if(!keyColumns.contains(column)) {
+                toUpdateColumns.add(column);
+            }
+        }
+
+        //初始化数据映射对象
+        rowMapper = new GenericMapper<ENTITY>(entityClass);
 
         //获取分表策略
         Shard shardAnnotation = entityClass.getAnnotation(Shard.class);
@@ -135,8 +181,212 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
 
 
     @Override
-    public ENTITY get(KEY value) {
+    public ENTITY get(KEY key) {
 
+        Query query = getQueryBuilder().build();
+        query.setQueryFields(queryColumns);
+        query.addConditions(getKeyConditions(key));
+
+        List<ENTITY> list = dataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
+        return CollectionUtils.isEmpty(list) ? null : list.get(0);
+
+    }
+
+    @Override
+    public void insert(ENTITY entity){
+
+        Insert insert = getInsertBuilder().build();
+        insert.setInsertFields(getDataMapByColumns(toInsertColumns, entity));
+
+        dataSource.getJdbcTemplate(ActionMode.INSERT).update(insert.getSql(), insert.getParams());
+    }
+
+
+    @Override
+    public Long insertAndGetKey(ENTITY entity){
+
+        Insert insert = getInsertBuilder().build();
+        Map<String, Object> dataMap = getDataMapByColumns(toInsertColumns, entity);
+        insert.setInsertFields(dataMap);
+        String sql = insert.getSql();
+
+        String[] columnsArray = new String[dataMap.size()];
+        Object[] paramsArray = new Object[dataMap.size()];
+        int i=0;
+        for(Map.Entry<String, Object> entry : dataMap.entrySet()) {
+            columnsArray[i] = entry.getKey();
+            paramsArray[i] = entry.getValue();
+            i++;
+        }
+
+        KeyHolder keyHolder = new GeneratedKeyHolder();
+        JdbcTemplate jdbcTemplate = dataSource.getJdbcTemplate(ActionMode.INSERT);
+        jdbcTemplate.update(
+                new PreparedStatementCreator() {
+                    @Override
+                    public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
+                        PreparedStatement ps = jdbcTemplate.getDataSource().getConnection()
+                                .prepareStatement(sql, columnsArray);
+                        for(int k=1; k<=paramsArray.length; k++) {
+                            ps.setObject(k, paramsArray[k-1]);
+                        }
+                        return ps;
+                    }
+                }, keyHolder);
+
+
+        return keyHolder.getKey().longValue();
+    }
+
+
+    @Override
+    public void update(ENTITY entity) {
+        UpdateBuilder updateBuilder = ActionBuilderContainer.getActionBuilder(table, ActionMode.UPDATE);
+        if(null == updateBuilder) {
+            if(null == shardStrategy) {
+                updateBuilder = new UpdateBuilder(table);
+            }else {
+                updateBuilder = new UpdateBuilder(table, shardStrategy);
+            }
+            ActionBuilderContainer.setActionBuilder(updateBuilder);
+        }
+
+        Update update = updateBuilder.build();
+        update.addConditions(getKeyConditionsFomEntity(entity));
+        update.setUpdateFields(getDataMapByColumns(toUpdateColumns, entity));
+
+        dataSource.getJdbcTemplate(ActionMode.UPDATE).update(update.getSql(), update.getParams());
+
+
+    }
+
+
+    @Override
+    public void delete(KEY key){
+
+        DeleteBuilder deleteBuilder = ActionBuilderContainer.getActionBuilder(table, ActionMode.DELETE);
+        if(null == deleteBuilder) {
+            if(null == shardStrategy) {
+                deleteBuilder = new DeleteBuilder(table);
+            }else {
+                deleteBuilder = new DeleteBuilder(table, shardStrategy);
+            }
+            ActionBuilderContainer.setActionBuilder(deleteBuilder);
+        }
+
+        Delete delete = deleteBuilder.build();
+        delete.addConditions(getKeyConditions(key));
+
+        dataSource.getJdbcTemplate(ActionMode.DELETE).update(delete.getSql(), delete.getParams());
+
+    }
+
+    @Override
+    public List<ENTITY> query(Map<String, Object> conditions, Order... orders){
+
+        return query(conditions, null, orders);
+    }
+
+    @Override
+    public List<ENTITY> query(Map<String, Object> conditions, PageModel pageModel, Order... orders) {
+
+        Query query = getQueryBuilder().build();
+        query.setQueryFields(queryColumns);
+        for(Map.Entry<String, Object> entry : conditions.entrySet()) {
+            query.addCondition(new EqualsMatcher(entry.getKey(), entry.getValue()));
+        }
+        query.setOrders(orders);
+        query.setPageModel(pageModel);
+
+        List<ENTITY> list = dataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
+        return CollectionUtils.isEmpty(list) ? new ArrayList<ENTITY>() : list;
+    }
+
+    private List<Matcher> getKeyConditions(KEY key) {
+        List<Matcher> matcherList = new ArrayList<Matcher>();
+
+        if(CollectionUtils.isEmpty(keyColumns)) {
+            throw new RuntimeException("no key columns found!");
+        }
+
+        if(keyColumns.size() == 1) { //单一主键,直接取key值
+            matcherList.add(new EqualsMatcher(table.getKeys()[0], key));
+        }else if(keyColumns.size() > 1){ //组合主键
+            for(int i=0; i<keyFields.size(); i++) {
+
+                Method fieldGetMethod = GenericMapper.getMethod(entityClass, keyFields.get(i), MethodType.GET);
+                try {
+                    String keyColumn = keyColumns.get(i);
+                    Object keyValue = fieldGetMethod.invoke(key);
+                    matcherList.add(new EqualsMatcher(keyColumn, keyValue));
+                } catch (IllegalAccessException e) {
+                    log.error(e.getMessage(), e);
+                } catch (InvocationTargetException e) {
+                    log.error(e.getMessage(), e.getTargetException());
+                }
+            }
+
+        }
+        return matcherList;
+
+    }
+
+
+    private List<Matcher> getKeyConditionsFomEntity(ENTITY entity) {
+        List<Matcher> matcherList = new ArrayList<Matcher>();
+
+        if(CollectionUtils.isEmpty(keyColumns)) {
+            throw new RuntimeException("no key columns found!");
+        }
+
+        for(int i=0; i<keyFields.size(); i++) {
+
+            Method fieldGetMethod = GenericMapper.getMethod(entityClass, keyFields.get(i), MethodType.GET);
+            try {
+                String keyColumn = keyColumns.get(i);
+                Object keyValue = fieldGetMethod.invoke(entity);
+                matcherList.add(new EqualsMatcher(keyColumn, keyValue));
+            } catch (IllegalAccessException e) {
+                log.error(e.getMessage(), e);
+            } catch (InvocationTargetException e) {
+                log.error(e.getMessage(), e.getTargetException());
+            }
+        }
+
+        return matcherList;
+
+    }
+
+
+    private Map<String, Object> getDataMapByColumns(List<String> columns, ENTITY entity) {
+        Map<String, Object> dataMap = new HashMap<String, Object>();
+        for(String column : columns) {
+            Object value = null;
+            Field field = GenericMapper.getFieldWithColumn(entityClass, column);
+            if(field == null) {
+                throw new RuntimeException("column [" + column + "] has no appropriate field!");
+            }
+
+            Method getMethod = GenericMapper.getMethod(entityClass, field, MethodType.GET);
+            if(getMethod == null) {
+                throw new RuntimeException("field [" + field.getName() + "] has no get method!");
+            }
+            try {
+                value = getMethod.invoke(entity);
+            }  catch (IllegalAccessException e) {
+                log.error(e.getMessage(), e);
+            } catch (InvocationTargetException e) {
+                log.error(e.getMessage(), e.getTargetException());
+            }
+            if(value != null) {
+                dataMap.put(column, value);
+            }
+
+        }
+        return dataMap;
+    }
+
+    private QueryBuilder getQueryBuilder() {
         QueryBuilder queryBuilder = ActionBuilderContainer.getActionBuilder(table, ActionMode.QUERY);
         if(null == queryBuilder) {
             if(null == shardStrategy) {
@@ -147,93 +397,21 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
             ActionBuilderContainer.setActionBuilder(queryBuilder);
         }
 
-        Query query = queryBuilder.build();
-        query.setQueryFields(columns.toArray(new String[columns.size()]));
+        return queryBuilder;
+    }
 
-        if(keys.size() == 1) { //单一主键
-            Matcher matcher = new EqualsMatcher(table.getKeys()[0], value);
-            query.addCondition(matcher);
-        }else { //组合主键
-            for(int i=0; i<keyFields.size(); i++) {
-
-                Method fieldGetMethod = GenericMapper.getMethod(entityClass, keyFields.get(i), MethodType.GET);
-                try {
-                    String keyColumn = keys.get(i);
-                    Object keyValue = fieldGetMethod.invoke(this);
-                    query.addCondition(new EqualsMatcher(keyColumn, keyValue));
-                } catch (IllegalAccessException e) {
-                    log.error(e.getMessage(), e);
-                } catch (InvocationTargetException e) {
-                    log.error(e.getMessage(), e.getTargetException());
-                }
+    private InsertBuilder getInsertBuilder() {
+        InsertBuilder insertBuilder = ActionBuilderContainer.getActionBuilder(table, ActionMode.INSERT);
+        if(null == insertBuilder) {
+            if(null == shardStrategy) {
+                insertBuilder = new InsertBuilder(table);
+            }else {
+                insertBuilder = new InsertBuilder(table, shardStrategy);
             }
-
+            ActionBuilderContainer.setActionBuilder(insertBuilder);
         }
 
-        List<ENTITY> list = dataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
-//
-//        return CollectionUtils.isEmpty(list) ? null : list.get(0);
-
-        return null;
+       return insertBuilder;
     }
 
-    @Override
-    public void insert(ENTITY entity){
-
-        //忽略autoIncrement
-        //忽略readOnly
-    }
-
-
-    @Override
-    public KEY insertAndGetKey(ENTITY entity){
-        return null;
-    }
-
-
-    @Override
-    public void updateByKey(ENTITY entity) {}
-
-
-    @Override
-    public void deleteByKey(KEY key){}
-
-
-
-//    private boolean isCombinedKey(Class<KEY> keyClass) {
-//
-//        if (keyClass.equals(Integer.class) || keyClass.equals(Integer.TYPE)) {
-//            return false;
-//        }
-//
-//        if (keyClass.equals(Long.class) || keyClass.equals(Long.TYPE)) {
-//            return false;
-//        }
-//
-//        if (keyClass.equals(Boolean.class) || keyClass.equals(Boolean.TYPE)) {
-//            return false;
-//        }
-//
-//        if (keyClass.equals(Float.class) || keyClass.equals(Float.TYPE)) {
-//            return false;
-//        }
-//
-//        if (keyClass.equals(Double.class) || keyClass.equals(Double.TYPE)) {
-//            return false;
-//        }
-//
-//        if (keyClass.equals(Byte.class) || keyClass.equals(Byte.TYPE)) {
-//            return false;
-//        }
-//
-//        if (keyClass.equals(String.class)) {
-//            return false;
-//        }
-//
-//        if (java.util.Date.class.isAssignableFrom(keyClass)) {
-//            return false;
-//        }
-//
-//        return true;
-//    }
 }

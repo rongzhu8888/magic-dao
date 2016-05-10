@@ -19,6 +19,11 @@ public abstract class ConditionAction extends Action {
     private List<Object> conParams = null;
     private String shardingTableName = null;
 
+    public <T extends ConditionAction>T addConditions(Collection<Matcher> matcheres) {
+        conditions.addAll(matcheres);
+        return (T) this;
+    }
+
     public <T extends ConditionAction>T addCondition(Matcher matcher) {
         conditions.add(matcher);
         return (T) this;
@@ -74,7 +79,7 @@ public abstract class ConditionAction extends Action {
             }
 
             if(shardStrategy != null && this.shardingTableName == null) {
-                throw new RuntimeException("Shard error: can not find shard column from conditions!");
+                throw new RuntimeException("Shard error: can not find sharding column from condition data!");
             }
 
             this.conSql = conditionSqlBuilder.toString().replace("WHERE AND", "WHERE");

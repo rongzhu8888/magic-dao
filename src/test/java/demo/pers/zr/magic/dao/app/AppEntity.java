@@ -2,6 +2,7 @@ package demo.pers.zr.magic.dao.app;
 
 import pers.zr.magic.dao.annotation.Column;
 import pers.zr.magic.dao.annotation.Key;
+import pers.zr.magic.dao.annotation.Shard;
 import pers.zr.magic.dao.annotation.Table;
 
 import java.io.Serializable;
@@ -11,10 +12,11 @@ import java.util.Date;
  * Created by zhurong on 2016-5-6.
  */
 @Table(name = "mc_app")
+//@Shard(shardColumn = "app_id", shardCount = 32, separator = "_")
 public class AppEntity implements Serializable {
 
-    @Key(column = "app_id")
-    private String appId;
+    @Key(column = "app_id", autoIncrement = true)
+    private Long appId;
 
     @Column(value = "app_name")
     private String appName;
@@ -31,11 +33,11 @@ public class AppEntity implements Serializable {
     @Column(value = "update_time", readOnly = true)
     private Date updateTime;
 
-    public String getAppId() {
+    public Long getAppId() {
         return appId;
     }
 
-    public void setAppId(String appId) {
+    public void setAppId(Long appId) {
         this.appId = appId;
     }
 
