@@ -40,10 +40,10 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
 
     protected final Logger log = LogManager.getLogger(getClass());
 
-    protected MagicDataSource dataSource;
+    protected MagicDataSource magicDataSource;
 
-    public void setDataSource(MagicDataSource dataSource) {
-        this.dataSource = dataSource;
+    public void setMagicDataSource(MagicDataSource magicDataSource) {
+        this.magicDataSource = magicDataSource;
     }
 
     /** 实体类 */
@@ -188,7 +188,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         query.setQueryFields(tableColumns);
         query.addConditions(getKeyConditions(key));
 
-        List<ENTITY> list = dataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
+        List<ENTITY> list = magicDataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
         return CollectionUtils.isEmpty(list) ? null : list.get(0);
 
     }
@@ -199,7 +199,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         Insert insert = getBuilder(ActionMode.INSERT).build();
         insert.setInsertFields(getDataMapByColumns(toInsertColumns, entity));
 
-        dataSource.getJdbcTemplate(ActionMode.INSERT).update(insert.getSql(), insert.getParams());
+        magicDataSource.getJdbcTemplate(ActionMode.INSERT).update(insert.getSql(), insert.getParams());
     }
 
 
@@ -221,7 +221,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         }
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
-        JdbcTemplate jdbcTemplate = dataSource.getJdbcTemplate(ActionMode.INSERT);
+        JdbcTemplate jdbcTemplate = magicDataSource.getJdbcTemplate(ActionMode.INSERT);
         jdbcTemplate.update(
                 new PreparedStatementCreator() {
                     @Override
@@ -247,7 +247,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         update.addConditions(getKeyConditionsFomEntity(entity));
         update.setUpdateFields(getDataMapByColumns(toUpdateColumns, entity));
 
-        dataSource.getJdbcTemplate(ActionMode.UPDATE).update(update.getSql(), update.getParams());
+        magicDataSource.getJdbcTemplate(ActionMode.UPDATE).update(update.getSql(), update.getParams());
 
 
     }
@@ -259,7 +259,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         Delete delete = getBuilder(ActionMode.DELETE).build();
         delete.addConditions(getKeyConditions(key));
 
-        dataSource.getJdbcTemplate(ActionMode.DELETE).update(delete.getSql(), delete.getParams());
+        magicDataSource.getJdbcTemplate(ActionMode.DELETE).update(delete.getSql(), delete.getParams());
 
     }
 
@@ -271,7 +271,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
             delete.addConditions(Arrays.asList(conditions));
         }
 
-        dataSource.getJdbcTemplate(ActionMode.DELETE).update(delete.getSql(), delete.getParams());
+        magicDataSource.getJdbcTemplate(ActionMode.DELETE).update(delete.getSql(), delete.getParams());
     }
 
     @Override
@@ -283,7 +283,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         }
         update.setUpdateFields(valueMap);
 
-        dataSource.getJdbcTemplate(ActionMode.UPDATE).update(update.getSql(), update.getParams());
+        magicDataSource.getJdbcTemplate(ActionMode.UPDATE).update(update.getSql(), update.getParams());
     }
 
     @Override
@@ -303,7 +303,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         query.setOrders(orders);
         query.setPageModel(pageModel);
 
-        List<ENTITY> list = dataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
+        List<ENTITY> list = magicDataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
         return CollectionUtils.isEmpty(list) ? new ArrayList<ENTITY>() : list;
     }
 
@@ -319,7 +319,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         query.addConditions(conditions);
         query.setOrders(orders);
         query.setPageModel(pageModel);
-        List<ENTITY> list = dataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
+        List<ENTITY> list = magicDataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
         return CollectionUtils.isEmpty(list) ? new ArrayList<ENTITY>() : list;
     }
 
@@ -332,7 +332,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
             query.addCondition(new EqualsMatcher(entry.getKey(), entry.getValue()));
         }
 
-        return dataSource.getJdbcTemplate(ActionMode.QUERY).queryForObject(query.getSql(), query.getParams(), Long.class);
+        return magicDataSource.getJdbcTemplate(ActionMode.QUERY).queryForObject(query.getSql(), query.getParams(), Long.class);
     }
 
     public Long getCount(List<Matcher> conditions) {
@@ -340,7 +340,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         query.setQueryFields(Collections.singletonList("COUNT(1)"));
         query.addConditions(conditions);
 
-        return dataSource.getJdbcTemplate(ActionMode.QUERY).queryForObject(query.getSql(), query.getParams(), Long.class);
+        return magicDataSource.getJdbcTemplate(ActionMode.QUERY).queryForObject(query.getSql(), query.getParams(), Long.class);
     }
 
     private List<Matcher> getKeyConditions(KEY key) {

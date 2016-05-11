@@ -33,12 +33,12 @@
 		<property name="maxStatementsPerConnection" value="${mysql.maxStatementsPerConnection}" />
 	</bean>
 
-	<bean id="magicDataSource" class="pers.zr.magic.dao.MagicSingleDataSource">
+	<bean id="singleDataSource" class="pers.zr.magic.dao.MagicSingleDataSource">
 		<property name="dataSource" ref="master" />
 	</bean>
 
 	<bean id="appDao" class="demo.pers.zr.magic.dao.app.MagicAppDaoImpl" >
-		<property name="dataSource" ref="magicDataSource" />
+		<property name="magicDataSource" ref="singleDataSource" />
 
 	</bean>
 
