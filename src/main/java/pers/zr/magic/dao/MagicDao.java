@@ -17,7 +17,7 @@ public interface MagicDao<KEY extends Serializable, ENTITY extends Serializable>
 
     public void insert(ENTITY entity);
 
-    public Long insertAndGetKey(ENTITY entity);
+    public Long insertForId(ENTITY entity);
 
     public void update(ENTITY entity);
 
@@ -27,7 +27,13 @@ public interface MagicDao<KEY extends Serializable, ENTITY extends Serializable>
 
     public List<ENTITY> query(Map<String, Object> conditions, PageModel pageModel, Order... orders);
 
+    public List<ENTITY> query(List<Matcher> conditions, Order... orders);
+
+    public List<ENTITY> query(List<Matcher> conditions, PageModel pageModel, Order...orders);
+
     public Long getCount(Map<String, Object> conditions);
+
+    public Long getCount(List<Matcher> conditions);
 
     public void delete(Matcher...conditions);
 

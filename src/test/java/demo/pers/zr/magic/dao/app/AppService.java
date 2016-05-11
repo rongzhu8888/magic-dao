@@ -27,8 +27,10 @@ public class AppService {
 
         MagicAppDaoImpl dao = (MagicAppDaoImpl) ctx.getBean(MagicAppDaoImpl.class);
 
+        AppKey key = new AppKey();
+        key.setAppId(2L);
         //test getByKey
-        dao.get(2L);
+        dao.get(key);
 
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("group_id", 2);

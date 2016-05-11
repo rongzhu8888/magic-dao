@@ -22,9 +22,10 @@ public class Delete extends ConditionAction {
 
             this.sql = (new StringBuilder()).append("DELETE FROM ").append(tableName)
                     .append(" ").append(getConSql()).toString();
-            if (log.isDebugEnabled()) {
-                log.debug("### Delete SQL: " + sql + "###");
-            }
+
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("### [ " + sql + "] ###");
         }
         return this.sql;
     }

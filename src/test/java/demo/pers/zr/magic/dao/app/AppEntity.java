@@ -13,10 +13,7 @@ import java.util.Date;
  */
 @Table(name = "mc_app")
 //@Shard(shardColumn = "app_id", shardCount = 32, separator = "_")
-public class AppEntity implements Serializable {
-
-    @Key(column = "app_id", autoIncrement = true)
-    private Long appId;
+public class AppEntity extends AppKey implements Serializable {
 
     @Column(value = "app_name")
     private String appName;
@@ -32,14 +29,6 @@ public class AppEntity implements Serializable {
 
     @Column(value = "update_time", readOnly = true)
     private Date updateTime;
-
-    public Long getAppId() {
-        return appId;
-    }
-
-    public void setAppId(Long appId) {
-        this.appId = appId;
-    }
 
     public String getAppName() {
         return appName;

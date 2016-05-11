@@ -27,10 +27,12 @@ public class Update extends  ConditionAction {
 
         if(null == this.sql) {
             parse();
-            if (log.isDebugEnabled()) {
-                log.debug("### Update SQL: " + sql + "###");
-            }
         }
+
+        if (log.isDebugEnabled()) {
+            log.debug("### [ " + sql + "] ###");
+        }
+
         return this.sql;
     }
 

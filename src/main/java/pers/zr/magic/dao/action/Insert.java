@@ -30,9 +30,9 @@ public class Insert extends Action {
 
         if(null == this.sql) {
             parse();
-            if (log.isDebugEnabled()) {
-                log.debug("### Insert SQL: " + sql + "###");
-            }
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("### [ " + sql + "] ###");
         }
         return this.sql;
     }

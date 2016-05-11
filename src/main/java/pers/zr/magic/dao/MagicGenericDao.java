@@ -158,7 +158,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         table.setKeys(keyColumns.toArray(new String[keyColumns.size()]));
         table.setColumns(tableColumns.toArray(new String[tableColumns.size()]));
 
-        //获取待更新的字段=【writtenColumns】-【keyColumns】
+        //获取可更新的字段=【toInsertColumns】-【keyColumns】
         toUpdateColumns = new ArrayList<String>();
         for(String column : toInsertColumns) {
             if(!keyColumns.contains(column)) {
@@ -204,7 +204,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
 
 
     @Override
-    public Long insertAndGetKey(ENTITY entity){
+    public Long insertForId(ENTITY entity){
 
         Insert insert = getBuilder(ActionMode.INSERT).build();
         Map<String, Object> dataMap = getDataMapByColumns(toInsertColumns, entity);
@@ -307,14 +307,38 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         return CollectionUtils.isEmpty(list) ? new ArrayList<ENTITY>() : list;
     }
 
+    public List<ENTITY> query(List<Matcher> conditions, Order... orders) {
+
+        return query(conditions, null, orders);
+
+    }
+
+    public List<ENTITY> query(List<Matcher> conditions, PageModel pageModel, Order...orders) {
+        Query query = getBuilder(ActionMode.QUERY).build();
+        query.setQueryFields(tableColumns);
+        query.addConditions(conditions);
+        query.setOrders(orders);
+        query.setPageModel(pageModel);
+        List<ENTITY> list = dataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
+        return CollectionUtils.isEmpty(list) ? new ArrayList<ENTITY>() : list;
+    }
+
     @Override
     public Long getCount(Map<String, Object> conditions) {
 
         Query query = getBuilder(ActionMode.QUERY).build();
-        query.setQueryFields(Arrays.asList("COUNT(1)"));
+        query.setQueryFields(Collections.singletonList("COUNT(1)"));
         for(Map.Entry<String, Object> entry : conditions.entrySet()) {
             query.addCondition(new EqualsMatcher(entry.getKey(), entry.getValue()));
         }
+
+        return dataSource.getJdbcTemplate(ActionMode.QUERY).queryForObject(query.getSql(), query.getParams(), Long.class);
+    }
+
+    public Long getCount(List<Matcher> conditions) {
+        Query query = getBuilder(ActionMode.QUERY).build();
+        query.setQueryFields(Collections.singletonList("COUNT(1)"));
+        query.addConditions(conditions);
 
         return dataSource.getJdbcTemplate(ActionMode.QUERY).queryForObject(query.getSql(), query.getParams(), Long.class);
     }
@@ -325,16 +349,16 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         if(CollectionUtils.isEmpty(keyColumns)) {
             throw new RuntimeException("no key columns found!");
         }
-        //TODO 待优化（简单类型直接取key值，复杂对象类型key，通过反射调用）
-        if(keyColumns.size() == 1) { //单一主键,直接取key值
+
+        if(keyColumns.size() == 1 && ClassUtil.isBasicType(keyClass)) { //单一基本类型主键（如Long,String,int等）,直接取key值
             matcherList.add(new EqualsMatcher(table.getKeys()[0], key));
-        }else if(keyColumns.size() > 1){ //组合主键
+        }else {
             for(int i=0; i<keyFields.size(); i++) {
 
                 Method fieldGetMethod = GenericMapper.getMethod(entityClass, keyFields.get(i), MethodType.GET);
                 try {
                     String keyColumn = keyColumns.get(i);
-                    Object keyValue = fieldGetMethod.invoke(key);
+                    Object keyValue = fieldGetMethod.invoke(key); //非基本类型主键通过反射调用get method获取键值
                     matcherList.add(new EqualsMatcher(keyColumn, keyValue));
                 } catch (IllegalAccessException e) {
                     log.error(e.getMessage(), e);

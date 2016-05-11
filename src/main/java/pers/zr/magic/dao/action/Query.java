@@ -76,10 +76,12 @@ public class Query extends ConditionAction {
 
             this.sql = sqlBuilder.toString();
 
-            if (log.isDebugEnabled()) {
-                log.debug("### Query SQL: " + sql + "###");
-            }
         }
+
+        if (log.isDebugEnabled()) {
+            log.debug("### [ " + sql + "] ###");
+        }
+
         return this.sql;
 
 

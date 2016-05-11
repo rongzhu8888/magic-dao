@@ -4,17 +4,10 @@
  */
 package pers.zr.magic.dao.utils;
 
-
-import pers.zr.magic.dao.annotation.Column;
-
 import java.lang.reflect.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class ClassUtil {
-
 
     public final static Type[] getGenericTypes(Class<?> clazz) {
 
@@ -72,82 +65,45 @@ public class ClassUtil {
         return ms;
     }
 
-    public static Map<String, Method> filter2Map(Set<Method> ms) {
-
-        Map<String, Method> map = new HashMap<String, Method>();
-        for (Method m : ms) {
-            boolean flag = Modifier.isPublic(m.getModifiers()) && !Modifier.isStatic(m.getModifiers());
-            if (flag) {
-
-                String name = m.getName().toLowerCase();
-                if (name.startsWith("get") && m.getParameterTypes().length == 0) {
-                } else if (name.startsWith("is") && m.getParameterTypes().length == 0) {
-                } else if (name.startsWith("set") && m.getParameterTypes().length == 1) {
-                } else {
-                    continue;
-                }
-
-                // 获取同名的方法
-                Method old = map.get(name);
-
-                // 如果之前没有同名方法,则添加本方法
-                if (old == null) {
-                    map.put(name, m);
-
-                    // 如果有同名方法，且本方法在子类中声明，且，父类本方法包含了annotation，则替换原来的方法
-                } else if (old.getDeclaringClass().isAssignableFrom(m.getDeclaringClass()) &&
-                               m.getAnnotation(Column.class) != null) {
-                    map.put(name, m);
-                }
-            }
+    public static boolean isBasicType(Class<?> clazz) {
+        if (Collection.class.isAssignableFrom(clazz)) {
+            return false;
         }
-        return map;
-    }
-
-
-    public final static void copyProperties(Object from, Object to) {
-
-        Set<Field> fromSet = getAllFiled(from.getClass());
-        Set<Field> toSet = getAllFiled(to.getClass());
-
-        Map<String, Field> toMap = new HashMap<String, Field>();
-        for (Field f : toSet) {
-            toMap.put(f.getName(), f);
+        
+        if (clazz.equals(Integer.class) || clazz.equals(Integer.TYPE)) {
+            return true;
         }
 
-        for (Field f : fromSet) {
-            if (Modifier.isStatic(f.getModifiers())) {
-                continue;
-            }
-            String name = f.getName();
-            Field toField = toMap.get(name);
-            if (toField == null) {
-                continue;
-            }
-
-            toField.setAccessible(true);
-            f.setAccessible(true);
-            try {
-                toField.set(to, f.get(from));
-            } catch (IllegalArgumentException e) {
-                e.printStackTrace();
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            }
+        if (clazz.equals(Long.class) || clazz.equals(Long.TYPE)) {
+            return true;
         }
 
-    }
-
-    public static Field getFieldFromClass(String field, Class<? extends Object> clazz) {
-        try {
-            return clazz.getDeclaredField(field);
-        } catch (Exception e) {
-            try {
-                return clazz.getField(field);
-            } catch (Exception ex) {
-            }
+        if (clazz.equals(Boolean.class) || clazz.equals(Boolean.TYPE)) {
+            return true;
         }
-        return null;
+
+        if (clazz.equals(Float.class) || clazz.equals(Float.TYPE)) {
+            return true;
+        }
+
+        if (clazz.equals(Double.class) || clazz.equals(Double.TYPE)) {
+            return true;
+        }
+
+        if (clazz.equals(Byte.class) || clazz.equals(Byte.TYPE)) {
+            return true;
+        }
+
+        if (clazz.equals(String.class)) {
+            return true;
+        }
+
+        if (Date.class.isAssignableFrom(clazz)) {
+            return true;
+        }
+
+        return false;
+
     }
 
 

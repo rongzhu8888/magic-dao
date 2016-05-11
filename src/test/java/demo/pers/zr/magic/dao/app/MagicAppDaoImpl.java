@@ -6,7 +6,7 @@ import pers.zr.magic.dao.MagicGenericDao;
  * Created by zhurong on 2016-5-6.
  */
 
-public class MagicAppDaoImpl extends MagicGenericDao<Long, AppEntity> implements MagicAppDao {
+public class MagicAppDaoImpl extends MagicGenericDao<AppKey, AppEntity> implements MagicAppDao {
 
 
 

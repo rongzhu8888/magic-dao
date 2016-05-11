@@ -5,7 +5,7 @@ import pers.zr.magic.dao.MagicDao;
 /**
  * Created by zhurong on 2016-5-6.
  */
-public interface MagicAppDao extends MagicDao<Long, AppEntity> {
+public interface MagicAppDao extends MagicDao<AppKey, AppEntity> {
 
 
 }
