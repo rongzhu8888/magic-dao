@@ -22,23 +22,24 @@ public class AppService {
 
 
     public static void main(String []args) {
-        ApplicationContext ctx =
-                new ClassPathXmlApplicationContext("applicationContext-dao.xml");
 
-        MagicAppDaoImpl dao = (MagicAppDaoImpl) ctx.getBean(MagicAppDaoImpl.class);
-
-        AppKey key = new AppKey();
-        key.setAppId(2L);
-        //test getByKey
-        dao.get(key);
-
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("group_id", 2);
-        System.out.println(dao.getCount(map));
-
-        Map<String, Object> valueMap = new HashMap<>();
-        valueMap.put("group_id", 4);
-        dao.update(valueMap, new LessMatcher("update_time", new Date()));
+//        ApplicationContext ctx =
+//                new ClassPathXmlApplicationContext("applicationContext-dao.xml");
+//
+//        MagicAppDaoImpl dao = (MagicAppDaoImpl) ctx.getBean(MagicAppDaoImpl.class);
+//
+//        AppKey key = new AppKey();
+//        key.setAppId(2L);
+//        //test getByKey
+//        dao.get(key);
+//
+//        Map<String, Object> map = new HashMap<String, Object>();
+//        map.put("group_id", 2);
+//        System.out.println(dao.getCount(map));
+//
+//        Map<String, Object> valueMap = new HashMap<>();
+//        valueMap.put("group_id", 4);
+//        dao.update(valueMap, new LessMatcher("update_time", new Date()));
 
         //test insert
 //        AppEntity entity = new AppEntity();

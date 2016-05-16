@@ -80,6 +80,10 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     @SuppressWarnings("unchecked")
     public MagicGenericDao() {
 
+        if(log.isInfoEnabled()) {
+            log.info("initialize instance of " + getClass());
+        }
+
         //获取实体类和主键类
         Type[] types = ClassUtil.getGenericTypes(getClass());
         keyClass = (Class<KEY>)types[0];
@@ -91,17 +95,19 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
             throw new RuntimeException("Class [" + entityClass.getName() +"] must be annotated with @Table!");
         }
 
+        //获取实体类的属性集合
         Set<Field> fields = ClassUtil.getAllFiled(entityClass);
         if(CollectionUtils.isEmpty(fields)) {
             throw new RuntimeException("Class [" + entityClass.getName() +"] has no fields!");
         }
 
+        //获取实体类的方法集合
         Set<Method> methods = ClassUtil.getAllMethod(entityClass);
         if(CollectionUtils.isEmpty(methods)) {
             throw new RuntimeException("Class [" + entityClass.getName() +"] has no methods!");
         }
 
-        //获取列、主键
+        //根据@Key和@Column获取字段（包括主键）列表，以及与属性的映射关系
         keyColumns = new ArrayList<String>();
         keyFields = new ArrayList<Field>();
         tableColumns = new ArrayList<String>();
