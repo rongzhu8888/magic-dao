@@ -1,5 +1,7 @@
 package pers.zr.magic.dao;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
 import pers.zr.magic.dao.constants.ActionMode;
 
@@ -15,6 +17,8 @@ import java.util.Random;
  */
 public class MagicMultiDataSource implements MagicDataSource {
 
+    private Logger log = LogManager.getLogger(MagicMultiDataSource.class);
+
     private DataSource master;
 
     private List<DataSource> slaves;
@@ -27,8 +31,10 @@ public class MagicMultiDataSource implements MagicDataSource {
 
     @Override
     public JdbcTemplate getJdbcTemplate(ActionMode actionMode) {
-        if(ActionMode.QUERY != actionMode)
-        {  //insert|update|delete操作使用主库
+        //insert|update|delete操作使用主库
+        if(ActionMode.INSERT == actionMode
+                || ActionMode.UPDATE == actionMode
+                || ActionMode.DELETE == actionMode) {
 
             if(null != masterJdbcTemplate) {
                 return masterJdbcTemplate;
@@ -36,38 +42,41 @@ public class MagicMultiDataSource implements MagicDataSource {
 
             synchronized (object1) {
                 if(null == masterJdbcTemplate) {
-
+                    if(log.isDebugEnabled()) {
+                        log.debug("JdbcTemplate instance created with master of MagicMultiDataSource!");
+                    }
                     masterJdbcTemplate = new JdbcTemplate(master);
                 }
             }
             return masterJdbcTemplate;
 
-        }
-        else
-        {  //query操作，如果没有从库，则查询主库，否则优先查询从库
+        } else if(ActionMode.QUERY == actionMode){
+            //query操作，如果没有从库，则查询主库，否则优先查询从库
             if(slaves == null || slaves.isEmpty()) {
                 return masterJdbcTemplate;
             }else {
-
                 if(null == slaveJdbcTemplates || slaveJdbcTemplates.isEmpty()) {
                     synchronized (object2) {
                         if(null == slaveJdbcTemplates || slaveJdbcTemplates.isEmpty()) {
-
                             slaveJdbcTemplates = new ArrayList<JdbcTemplate>();
                             for(DataSource slave : slaves) {
+                                if(log.isDebugEnabled()) {
+                                    log.debug("JdbcTemplate instance created with slaves of MagicMultiDataSource!");
+                                }
                                 slaveJdbcTemplates.add(new JdbcTemplate(slave));
                             }
                         }
                     }
                 }
 
-                //TODO 自动移除连接断开或者不可用的从库
+                //TODO 自动监控并移除连接断开或者不可用的从库
 
                 //随机返回一个从库
-                //TODO 待优化，可以考虑类似负载均衡
                 int randomSlaveIndex = new Random().nextInt(slaves.size());
                 return slaveJdbcTemplates.get(randomSlaveIndex);
             }
+        }else {
+            throw new RuntimeException("Invalid action mode!");
         }
 
     }

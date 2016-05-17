@@ -36,7 +36,7 @@ public class MagicSingleDataSource implements MagicDataSource {
                 jdbcTemplate = new JdbcTemplate(dataSource);
 
                 if(log.isDebugEnabled()) {
-                    log.debug("JdbcTemplate instance  created With MagicSingleDataSource!");
+                    log.debug("JdbcTemplate instance created with MagicSingleDataSource!");
                 }
             }
         }
