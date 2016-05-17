@@ -15,7 +15,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
 /**
- * Created by peter.zhu on 2016/4/30.
+ * Created by zhurong on 2016/4/30.
  */
 public class MagicMultiDataSourceTest {
 

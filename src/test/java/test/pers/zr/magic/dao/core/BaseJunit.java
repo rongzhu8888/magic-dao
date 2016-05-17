@@ -7,7 +7,7 @@ import pers.zr.magic.dao.shard.ShardStrategy;
 import pers.zr.magic.dao.action.ActionTable;
 
 /**
- * Created by peter.zhu on 2016/4/30.
+ * Created by zhurong on 2016/4/30.
  */
 public class BaseJunit {
 

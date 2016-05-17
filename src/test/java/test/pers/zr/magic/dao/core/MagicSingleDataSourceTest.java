@@ -10,7 +10,7 @@ import pers.zr.magic.dao.constants.ActionMode;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Created by peter.zhu on 2016/4/30.
+ * Created by zhurong on 2016/4/30.
  */
 public class MagicSingleDataSourceTest {
 

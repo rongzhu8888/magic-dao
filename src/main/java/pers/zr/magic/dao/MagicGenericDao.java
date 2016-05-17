@@ -96,13 +96,13 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         }
 
         //获取实体类的属性集合
-        Set<Field> fields = ClassUtil.getAllFiled(entityClass);
+        Set<Field> fields = ClassUtil.getAllFileds(entityClass);
         if(CollectionUtils.isEmpty(fields)) {
             throw new RuntimeException("Class [" + entityClass.getName() +"] has no fields!");
         }
 
         //获取实体类的方法集合
-        Set<Method> methods = ClassUtil.getAllMethod(entityClass);
+        Set<Method> methods = ClassUtil.getAllMethods(entityClass);
         if(CollectionUtils.isEmpty(methods)) {
             throw new RuntimeException("Class [" + entityClass.getName() +"] has no methods!");
         }

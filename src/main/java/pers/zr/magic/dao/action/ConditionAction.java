@@ -9,7 +9,7 @@ import pers.zr.magic.dao.utils.ShardingUtil;
 import java.util.*;
 
 /**
- * Created by peter.zhu on 2016/4/30.
+ * Created by zhurong on 2016/4/30.
  */
 public abstract class ConditionAction extends Action {
 
