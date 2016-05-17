@@ -2,7 +2,6 @@ package pers.zr.magic.dao.action;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.util.CollectionUtils;
 import pers.zr.magic.dao.constants.ActionMode;
 import pers.zr.magic.dao.order.Order;
 import pers.zr.magic.dao.page.PageModel;
@@ -20,7 +19,7 @@ public class Query extends ConditionAction {
 
     private PageModel pageModel;
 
-    private Order[] orders;
+    private List<Order> orders;
 
     public void setQueryFields(List<String> queryFields) {
         this.queryFields = queryFields;
@@ -30,7 +29,7 @@ public class Query extends ConditionAction {
         this.pageModel = pageModel;
     }
 
-    public void setOrders(Order[] orders) {
+    public void setOrders(List<Order> orders) {
         this.orders = orders;
     }
 
@@ -59,10 +58,10 @@ public class Query extends ConditionAction {
                     .append(tableName).append(" ").append(getConSql());
 
             //排序
-            if(null != orders && orders.length > 0) {
+            if(null != orders && orders.size() > 0) {
                 sqlBuilder.append(" ORDER BY ");
-                for(int i=0; i<orders.length; i++) {
-                    sqlBuilder.append(orders[i].getColumn()).append(" ").append(orders[i].getType()).append(", ");
+                for(Order order : orders) {
+                    sqlBuilder.append(order.getColumn()).append(" ").append(order.getType()).append(", ");
                 }
                 sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(","));
             }

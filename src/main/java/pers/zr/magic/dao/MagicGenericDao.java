@@ -292,27 +292,45 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         magicDataSource.getJdbcTemplate(ActionMode.UPDATE).update(update.getSql(), update.getParams());
     }
 
+    @Override
+    public List<ENTITY> query(Matcher...conditions) {
+        Query query = ActionBuilderFactory.getBuilder(ActionMode.QUERY, table, shardStrategy).build();
+        query.setQueryFields(tableColumns);
+        query.addConditions(Arrays.asList(conditions));
+        List<ENTITY> list = magicDataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
+        return CollectionUtils.isEmpty(list) ? new ArrayList<ENTITY>() : list;
+    }
 
-    public List<ENTITY> query(List<Matcher> conditions, Order... orders) {
+    @Override
+    public List<ENTITY> query(PageModel pageModel, Matcher...conditions) {
 
-        return query(conditions, null, orders);
+        return query(pageModel, null, conditions);
 
     }
 
-    public List<ENTITY> query(List<Matcher> conditions, PageModel pageModel, Order...orders) {
+    @Override
+    public List<ENTITY> query(List<Order> orders, Matcher...conditions) {
+
+        return query(null, orders, conditions);
+
+    }
+
+    @Override
+    public List<ENTITY> query(PageModel pageModel, List<Order> orders, Matcher...conditions){
         Query query = ActionBuilderFactory.getBuilder(ActionMode.QUERY, table, shardStrategy).build();
         query.setQueryFields(tableColumns);
-        query.addConditions(conditions);
+        query.addConditions(Arrays.asList(conditions));
         query.setOrders(orders);
         query.setPageModel(pageModel);
         List<ENTITY> list = magicDataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
         return CollectionUtils.isEmpty(list) ? new ArrayList<ENTITY>() : list;
     }
 
-    public Long getCount(List<Matcher> conditions) {
+    @Override
+    public Long getCount(Matcher...conditions) {
         Query query = ActionBuilderFactory.getBuilder(ActionMode.QUERY, table, shardStrategy).build();
         query.setQueryFields(Collections.singletonList("COUNT(1)"));
-        query.addConditions(conditions);
+        query.addConditions(Arrays.asList(conditions));
 
         return magicDataSource.getJdbcTemplate(ActionMode.QUERY).queryForObject(query.getSql(), query.getParams(), Long.class);
     }
