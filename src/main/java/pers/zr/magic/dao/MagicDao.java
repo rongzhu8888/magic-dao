@@ -23,15 +23,9 @@ public interface MagicDao<KEY extends Serializable, ENTITY extends Serializable>
 
     public void delete(KEY key);
 
-    public List<ENTITY> query(Map<String, Object> conditions, Order... orders);
-
-    public List<ENTITY> query(Map<String, Object> conditions, PageModel pageModel, Order... orders);
-
     public List<ENTITY> query(List<Matcher> conditions, Order... orders);
 
     public List<ENTITY> query(List<Matcher> conditions, PageModel pageModel, Order...orders);
-
-    public Long getCount(Map<String, Object> conditions);
 
     public Long getCount(List<Matcher> conditions);
 
