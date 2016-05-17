@@ -63,7 +63,8 @@ public class ClassUtil {
                  clazz.equals(Double.class) || clazz.equals(Double.TYPE) ||
                  clazz.equals(Byte.class) || clazz.equals(Byte.TYPE) ||
                  clazz.equals(String.class) ||
-                 Date.class.isAssignableFrom(clazz));
+                 Date.class.isAssignableFrom(clazz)
+                );
 
     }
 

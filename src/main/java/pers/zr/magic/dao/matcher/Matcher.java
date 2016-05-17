@@ -17,4 +17,22 @@ public abstract class Matcher {
         return column;
     }
 
+    protected String convertSpecialChar(String value, MatchType matchType) {
+        String newValue = value;
+        if(MatchType.EQUALS == matchType || MatchType.NOT_EQUALS == matchType || MatchType.IN == matchType) {
+            newValue = value.replace("\'", "\'\'");
+            newValue = newValue.replace("\\", "\\\\");
+        } else {
+
+            if(MatchType.LIKE == matchType) {
+                newValue = value.replace("\'", "\'\'");
+                newValue = newValue.replace("\\", "\\\\\\\\");
+                newValue = newValue.replace("%", "\\\\%");
+                newValue = newValue.replace("_", "\\\\_");
+            }
+        }
+
+        return newValue;
+    }
+
 }

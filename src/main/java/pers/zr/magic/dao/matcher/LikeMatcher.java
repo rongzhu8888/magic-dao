@@ -11,7 +11,7 @@ public class LikeMatcher extends Matcher {
 
     public LikeMatcher(String column, String value) {
         this.column = column;
-        this.value = "%" + value.replace("_", "\\_").replace("%", "\\%") + "%"; //转义_、%特殊字符
+        this.value = "%" + convertSpecialChar(value, MatchType.LIKE) + "%"; //转义特殊字符
     }
 
     public Object[] getValues() {

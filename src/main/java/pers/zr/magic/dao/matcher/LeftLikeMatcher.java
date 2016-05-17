@@ -5,14 +5,14 @@ import pers.zr.magic.dao.constants.MatchType;
 /**
  * Created by zhurong on 2016-5-5.
  */
-public class SuffixLikeMatcher extends Matcher {
+public class LeftLikeMatcher extends Matcher {
 
     private String value;
 
-    public SuffixLikeMatcher(String column, String value) {
+    public LeftLikeMatcher(String column, String value) {
 
         this.column = column;
-        this.value = "%" + value.replace("_", "\\_").replace("%", "\\%"); //转义特殊字符
+        this.value = convertSpecialChar(value, MatchType.LIKE) + "%"; //转义特殊字符
     }
 
     @Override
