@@ -10,8 +10,6 @@ import java.util.Map;
  *
  *  缓存ActionBuilder，同一张表的多次同类型操作（如查询）共用一个ActionBuilder,减少对象创建数量
  *
- * 可以考虑在系统启动时扫描所有特定注解，初始化所有的ActionBuilder对象并填充到该容器中
- *
  * Created by zhurong on 2016-4-29.
  */
 public class ActionBuilderContainer {

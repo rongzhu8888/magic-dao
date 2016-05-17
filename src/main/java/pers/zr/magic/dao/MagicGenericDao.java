@@ -34,6 +34,9 @@ import java.sql.SQLException;
 import java.util.*;
 
 /**
+ * <p>
+ * Common and abstract implements of MagicDao
+ * </p>
  * Created by zhurong on 2016-4-29.
  */
 public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends Serializable> implements MagicDao<KEY, ENTITY> {

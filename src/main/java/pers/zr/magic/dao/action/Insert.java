@@ -23,7 +23,7 @@ public class Insert extends Action {
         this.insertFields = insertFields;
     }
 
-    private String shardingTableName = null;
+    private String shardTableName = null;
 
     @Override
     public String getSql() {
@@ -66,16 +66,16 @@ public class Insert extends Action {
             sqlBuilder.append(column).append(",");
             Object value = insertFields.get(column);
             paramsList.add(value);
-            if(this.shardStrategy != null && shardStrategy.getShardingColumn().equalsIgnoreCase(column)) {
+            if(this.shardStrategy != null && shardStrategy.getShardColumn().equalsIgnoreCase(column)) {
 
-                this.shardingTableName = table.getTableName() + shardStrategy.getSeparator()
-                        + ShardingUtil.getShardingTableSuffix(String.valueOf(value), shardStrategy.getShardingCount());
+                this.shardTableName = table.getTableName() + shardStrategy.getSeparator()
+                        + ShardingUtil.getShardTableSuffix(String.valueOf(value), shardStrategy.getShardCount());
 
             }
         }
 
-        if(shardStrategy != null && this.shardingTableName == null) {
-            throw new RuntimeException("Shard error: can not find sharding column from insert data!");
+        if(shardStrategy != null && this.shardTableName == null) {
+            throw new RuntimeException("Shard error: can not find shard column from insert data!");
         }
 
         sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(",")).append(") VALUES (");
@@ -86,7 +86,7 @@ public class Insert extends Action {
 
         String tableName = this.table.getTableName();
         if(null != this.shardStrategy) {
-            tableName = this.shardingTableName;
+            tableName = this.shardTableName;
         }
         this.sql = "INSERT INTO " + tableName + sqlBuilder.toString();
         this.params = paramsList.toArray();

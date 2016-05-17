@@ -17,7 +17,7 @@ public class Delete extends ConditionAction {
 
             String tableName = this.table.getTableName();
             if(null != this.shardStrategy) {
-                tableName = getShardingTableName();
+                tableName = getShardTableName();
             }
 
             this.sql = (new StringBuilder()).append("DELETE FROM ").append(tableName)

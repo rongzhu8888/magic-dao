@@ -58,7 +58,7 @@ public class Update extends  ConditionAction {
 
         String tableName = this.table.getTableName();
         if(null != this.shardStrategy) {
-            tableName = getShardingTableName();
+            tableName = getShardTableName();
         }
 
         StringBuilder sqlBuilder = new StringBuilder("UPDATE ").append(tableName).append(" SET ");

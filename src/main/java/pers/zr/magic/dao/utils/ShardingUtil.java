@@ -5,8 +5,8 @@ package pers.zr.magic.dao.utils;
  */
 public class ShardingUtil {
 
-    public static String getShardingTableSuffix(String value, int shardingCount) {
-        int shard = HashSlotUtil.getSlot(value, shardingCount);
+    public static String getShardTableSuffix(String value, int shardCount) {
+        int shard = HashSlotUtil.getSlot(value, shardCount);
         return (shard < 10) ? "0" + shard : String.valueOf(shard);
     }
 }

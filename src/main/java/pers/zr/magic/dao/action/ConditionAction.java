@@ -17,7 +17,7 @@ public abstract class ConditionAction extends Action {
 
     private String conSql = null;
     private List<Object> conParams = null;
-    private String shardingTableName = null;
+    private String shardTableName = null;
 
     public <T extends ConditionAction>T addConditions(Collection<Matcher> matcheres) {
         conditions.addAll(matcheres);
@@ -43,11 +43,11 @@ public abstract class ConditionAction extends Action {
         return this.conSql != null ? this.conSql : "";
     }
 
-    protected String getShardingTableName() {
-        if(null == shardingTableName) {
+    protected String getShardTableName() {
+        if(null == shardTableName) {
             analysisConditions();
         }
-        return this.shardingTableName;
+        return this.shardTableName;
     }
 
 
@@ -70,16 +70,16 @@ public abstract class ConditionAction extends Action {
 
                 //具有分表策略时，计算实际表名
                 if(null != shardStrategy
-                        && matcher.getColumn().equalsIgnoreCase(shardStrategy.getShardingColumn())) {
+                        && matcher.getColumn().equalsIgnoreCase(shardStrategy.getShardColumn())) {
 
-                    this.shardingTableName = this.table.getTableName()
+                    this.shardTableName = this.table.getTableName()
                             + this.shardStrategy.getSeparator()
-                            + ShardingUtil.getShardingTableSuffix(String.valueOf(matcher.getValues()[0]), shardStrategy.getShardingCount());
+                            + ShardingUtil.getShardTableSuffix(String.valueOf(matcher.getValues()[0]), shardStrategy.getShardCount());
                 }
             }
 
-            if(shardStrategy != null && this.shardingTableName == null) {
-                throw new RuntimeException("Shard error: can not find sharding column from condition data!");
+            if(shardStrategy != null && this.shardTableName == null) {
+                throw new RuntimeException("Shard error: can not find shard column from condition data!");
             }
 
             this.conSql = conditionSqlBuilder.toString().replace("WHERE AND", "WHERE");

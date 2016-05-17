@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * MagicDao interface
+ *
  * Created by zhurong on 2016-4-29.
  */
 public interface MagicDao<KEY extends Serializable, ENTITY extends Serializable> {

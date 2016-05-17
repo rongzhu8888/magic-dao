@@ -8,24 +8,24 @@ package pers.zr.magic.dao.shard;
  */
 public class ShardStrategy {
 
-    private int shardingCount; //分表（片）数量
+    private int shardCount; //分表（片）数量
 
-    private String shardingColumn; //sharding字段
+    private String shardColumn; //shard字段
 
     private String separator; //连接符
 
-    public ShardStrategy(int shardingCount, String shardingColumn, String separator) {
-        this.shardingCount = shardingCount;
-        this.shardingColumn = shardingColumn;
+    public ShardStrategy(int shardCount, String shardColumn, String separator) {
+        this.shardCount = shardCount;
+        this.shardColumn = shardColumn;
         this.separator = separator;
     }
 
-    public int getShardingCount() {
-        return shardingCount;
+    public int getShardCount() {
+        return shardCount;
     }
 
-    public String getShardingColumn() {
-        return shardingColumn;
+    public String getShardColumn() {
+        return shardColumn;
     }
 
     public String getSeparator() {

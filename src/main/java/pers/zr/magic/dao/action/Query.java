@@ -51,7 +51,7 @@ public class Query extends ConditionAction {
 
             String tableName = this.table.getTableName();
             if(null != this.shardStrategy) {
-                tableName = getShardingTableName();
+                tableName = getShardTableName();
             }
 
             sqlBuilder.append("SELECT ").append(targetFieldsStr).append(" FROM ")
