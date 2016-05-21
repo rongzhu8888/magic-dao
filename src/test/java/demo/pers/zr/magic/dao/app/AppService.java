@@ -3,8 +3,7 @@ package demo.pers.zr.magic.dao.app;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import pers.zr.magic.dao.constants.OrderType;
-import pers.zr.magic.dao.matcher.EqualsMatcher;
-import pers.zr.magic.dao.matcher.LessMatcher;
+import pers.zr.magic.dao.matcher.*;
 import pers.zr.magic.dao.order.Order;
 import pers.zr.magic.dao.page.PageModel;
 
@@ -23,10 +22,15 @@ public class AppService {
 
     public static void main(String []args) {
 
-//        ApplicationContext ctx =
-//                new ClassPathXmlApplicationContext("applicationContext-dao.xml");
-//
-//        MagicAppDaoImpl dao = (MagicAppDaoImpl) ctx.getBean(MagicAppDaoImpl.class);
+        ApplicationContext ctx =
+                new ClassPathXmlApplicationContext("applicationContext-dao.xml");
+
+        MagicAppDaoImpl dao = (MagicAppDaoImpl) ctx.getBean(MagicAppDaoImpl.class);
+
+        Matcher matcher = new LeftLikeMatcher("app_name", "二维码_");
+        List<AppEntity> appEntityList = dao.query(matcher);
+        System.out.println(appEntityList.size());
+
 //
 //        AppKey key = new AppKey();
 //        key.setAppId(2L);

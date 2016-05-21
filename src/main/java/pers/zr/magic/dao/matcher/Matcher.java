@@ -19,19 +19,12 @@ public abstract class Matcher {
 
     protected String convertSpecialChar(String value, MatchType matchType) {
         String newValue = value;
-        if(MatchType.EQUALS == matchType || MatchType.NOT_EQUALS == matchType || MatchType.IN == matchType) {
-            newValue = value.replace("\'", "\'\'");
+
+        if(MatchType.LIKE == matchType) {
             newValue = newValue.replace("\\", "\\\\");
-        } else {
-
-            if(MatchType.LIKE == matchType) {
-                newValue = value.replace("\'", "\'\'");
-                newValue = newValue.replace("\\", "\\\\\\\\");
-                newValue = newValue.replace("%", "\\\\%");
-                newValue = newValue.replace("_", "\\\\_");
-            }
+            newValue = newValue.replace("%", "\\%");
+            newValue = newValue.replace("_", "\\_");
         }
-
         return newValue;
     }
 

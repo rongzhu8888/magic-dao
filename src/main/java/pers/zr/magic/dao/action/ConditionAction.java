@@ -64,9 +64,23 @@ public abstract class ConditionAction extends Action {
             for(Matcher matcher : conditions) {
                 conditionSqlBuilder.append(ConditionType.AND).append(" ")
                         .append(matcher.getColumn()).append(" ")
-                        .append(matcher.getMatchType().value).append(" ? ");
+                        .append(matcher.getMatchType().value);
 
-                convertMatcher(conParamsList, matcher);
+                if(MatchType.IN != matcher.getMatchType()) {
+                    conditionSqlBuilder.append(" ? ");
+
+                }else {
+                    StringBuilder inConBuilder = new StringBuilder("(");
+                    for(int i=0; i<matcher.getValues().length; i++) {
+                        inConBuilder.append("?,");
+                    }
+                    inConBuilder.append(") ");
+                    inConBuilder.deleteCharAt(inConBuilder.lastIndexOf(","));
+                    conditionSqlBuilder.append(" ").append(inConBuilder);
+                }
+
+
+                getMatcherParam(conParamsList, matcher);
 
                 //具有分表策略时，计算实际表名
                 if(null != shardStrategy
@@ -89,7 +103,7 @@ public abstract class ConditionAction extends Action {
 
     }
 
-    private void convertMatcher(List<Object> list, Matcher matcher) {
+    private void getMatcherParam(List<Object> list, Matcher matcher) {
 
         if(null == matcher) {
             return;

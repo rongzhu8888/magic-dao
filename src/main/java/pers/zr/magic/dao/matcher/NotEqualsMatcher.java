@@ -11,11 +11,6 @@ public class NotEqualsMatcher extends Matcher {
 
     public NotEqualsMatcher(String column, Object value) {
 
-        //转义特殊字符
-        if(value instanceof String) {
-            value = convertSpecialChar(String.valueOf(value), MatchType.NOT_EQUALS);
-        }
-
         this.column = column;
         this.value = value;
     }

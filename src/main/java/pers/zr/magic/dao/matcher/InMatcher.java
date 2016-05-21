@@ -11,13 +11,8 @@ public class InMatcher extends Matcher {
 
     public InMatcher(String column, Object[] values) {
 
-        //转义特殊字符
-        for(int i=0; i<values.length; i++) {
-            Object value = values[i];
-            if(value instanceof String) {
-                value = convertSpecialChar(String.valueOf(value), MatchType.IN);
-            }
-            values[i] = value;
+        if(null == values || values.length < 1) {
+            throw new RuntimeException("InMatcher must contains at least one value!");
         }
 
         this.column = column;

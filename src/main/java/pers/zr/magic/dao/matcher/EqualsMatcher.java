@@ -11,10 +11,6 @@ public class EqualsMatcher extends Matcher {
 
     public EqualsMatcher(String column, Object value) {
 
-        //转义特殊字符
-        if(value instanceof String) {
-            value = convertSpecialChar(String.valueOf(value), MatchType.EQUALS);
-        }
         this.value = value;
         this.column = column;
     }

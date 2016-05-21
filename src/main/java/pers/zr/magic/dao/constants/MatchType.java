@@ -17,9 +17,9 @@ public enum MatchType {
 
     LESS_OR_EQUALS("<="),
 
-    IN("in"),
+    IN("IN"),
 
-    LIKE("like"),
+    LIKE("LIKE"),
 
     BETWEEN_AND("BETWEEN ? AND");
 

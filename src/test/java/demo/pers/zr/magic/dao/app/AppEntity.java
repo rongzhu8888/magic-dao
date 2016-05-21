@@ -18,8 +18,8 @@ public class AppEntity extends AppKey implements Serializable {
     @Column(value = "app_name")
     private String appName;
 
-    @Column(value = "app_desc")
-    private String appDesc;
+    @Column(value = "app_code")
+    private String appCode;
 
     @Column(value = "group_id")
     private String groupId;
@@ -38,12 +38,12 @@ public class AppEntity extends AppKey implements Serializable {
         this.appName = appName;
     }
 
-    public String getAppDesc() {
-        return appDesc;
+    public String getAppCode() {
+        return appCode;
     }
 
-    public void setAppDesc(String appDesc) {
-        this.appDesc = appDesc;
+    public void setAppCode(String appCode) {
+        this.appCode = appCode;
     }
 
     public String getGroupId() {
