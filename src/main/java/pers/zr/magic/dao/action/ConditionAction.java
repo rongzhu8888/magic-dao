@@ -4,7 +4,7 @@ import org.springframework.util.CollectionUtils;
 import pers.zr.magic.dao.constants.ConditionType;
 import pers.zr.magic.dao.constants.MatchType;
 import pers.zr.magic.dao.matcher.Matcher;
-import pers.zr.magic.dao.utils.ShardingUtil;
+import pers.zr.magic.dao.utils.ShardUtil;
 
 import java.util.*;
 
@@ -85,10 +85,10 @@ public abstract class ConditionAction extends Action {
                 //具有分表策略时，计算实际表名
                 if(null != shardStrategy
                         && matcher.getColumn().equalsIgnoreCase(shardStrategy.getShardColumn())) {
-
-                    this.shardTableName = this.table.getTableName()
-                            + this.shardStrategy.getSeparator()
-                            + ShardingUtil.getShardTableSuffix(String.valueOf(matcher.getValues()[0]), shardStrategy.getShardCount());
+                    this.shardTableName = ShardUtil.getShardTableName(table.getTableName(),
+                            shardStrategy.getSeparator(),
+                            shardStrategy.getShardCount(),
+                            String.valueOf(String.valueOf(matcher.getValues()[0])));
                 }
             }
 

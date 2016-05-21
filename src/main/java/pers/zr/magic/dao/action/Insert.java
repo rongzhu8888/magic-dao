@@ -4,7 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.util.CollectionUtils;
 import pers.zr.magic.dao.constants.ActionMode;
-import pers.zr.magic.dao.utils.ShardingUtil;
+import pers.zr.magic.dao.utils.ShardUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,10 +67,10 @@ public class Insert extends Action {
             Object value = insertFields.get(column);
             paramsList.add(value);
             if(this.shardStrategy != null && shardStrategy.getShardColumn().equalsIgnoreCase(column)) {
-
-                this.shardTableName = table.getTableName() + shardStrategy.getSeparator()
-                        + ShardingUtil.getShardTableSuffix(String.valueOf(value), shardStrategy.getShardCount());
-
+                this.shardTableName = ShardUtil.getShardTableName(table.getTableName(),
+                        shardStrategy.getSeparator(),
+                        shardStrategy.getShardCount(),
+                        String.valueOf(value));
             }
         }
 
