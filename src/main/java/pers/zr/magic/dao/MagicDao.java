@@ -2,7 +2,7 @@ package pers.zr.magic.dao;
 
 import pers.zr.magic.dao.matcher.Matcher;
 import pers.zr.magic.dao.order.Order;
-import pers.zr.magic.dao.page.PageModel;
+import pers.zr.magic.dao.page.Page;
 
 import java.io.Serializable;
 import java.util.List;
@@ -29,9 +29,9 @@ public interface MagicDao<KEY extends Serializable, ENTITY extends Serializable>
 
     public List<ENTITY> query(List<Order> orders, Matcher...conditions);
 
-    public List<ENTITY> query(PageModel pageModel, Matcher...conditions);
+    public List<ENTITY> query(Page page, Matcher...conditions);
 
-    public List<ENTITY> query(PageModel pageModel, List<Order> orders, Matcher...conditions);
+    public List<ENTITY> query(Page page, List<Order> orders, Matcher...conditions);
 
     public Long getCount(Matcher...conditions);
 

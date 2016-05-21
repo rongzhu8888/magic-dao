@@ -16,10 +16,11 @@ import pers.zr.magic.dao.annotation.Table;
 import pers.zr.magic.dao.constants.ActionMode;
 import pers.zr.magic.dao.mapper.GenericMapper;
 import pers.zr.magic.dao.constants.MethodType;
+import pers.zr.magic.dao.mapper.MapperContextHolder;
 import pers.zr.magic.dao.matcher.EqualsMatcher;
 import pers.zr.magic.dao.matcher.Matcher;
 import pers.zr.magic.dao.order.Order;
-import pers.zr.magic.dao.page.PageModel;
+import pers.zr.magic.dao.page.Page;
 import pers.zr.magic.dao.shard.ShardStrategy;
 import pers.zr.magic.dao.utils.ClassUtil;
 
@@ -131,7 +132,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
                     toInsertColumns.add(keyAnnotation.column());
                 }
 
-                GenericMapper.setFieldWithColumn(entityClass, keyAnnotation.column(), field);
+                MapperContextHolder.setFieldWithColumn(entityClass, keyAnnotation.column(), field);
 
             }else if(columnAnnotation != null) {
                 tableColumns.add(columnAnnotation.value());
@@ -140,7 +141,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
                 if(!columnAnnotation.readOnly()) {
                     toInsertColumns.add(columnAnnotation.value());
                 }
-                GenericMapper.setFieldWithColumn(entityClass, columnAnnotation.value(), field);
+                MapperContextHolder.setFieldWithColumn(entityClass, columnAnnotation.value(), field);
             }
 
             //获取各属性对应的SET\GET方法
@@ -150,13 +151,13 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
                 if(methodName.equalsIgnoreCase("set" + fieldName) ||
                         (fieldName.startsWith("is") && methodName.equalsIgnoreCase("set" + fieldName.substring(2)))) {
 
-                    GenericMapper.setMethod(entityClass, field, method, MethodType.SET);
+                    MapperContextHolder.setMethod(entityClass, field, method, MethodType.SET);
 
                 }else if(methodName.equalsIgnoreCase("get" + fieldName) ||
                         methodName.equalsIgnoreCase("is" + fieldName) ||
                         (fieldName.startsWith("is") && methodName.equalsIgnoreCase(fieldName))) {
 
-                    GenericMapper.setMethod(entityClass, field, method, MethodType.GET);
+                    MapperContextHolder.setMethod(entityClass, field, method, MethodType.GET);
 
                 }
 
@@ -306,9 +307,9 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     }
 
     @Override
-    public List<ENTITY> query(PageModel pageModel, Matcher...conditions) {
+    public List<ENTITY> query(Page page, Matcher...conditions) {
 
-        return query(pageModel, null, conditions);
+        return query(page, null, conditions);
 
     }
 
@@ -320,12 +321,12 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     }
 
     @Override
-    public List<ENTITY> query(PageModel pageModel, List<Order> orders, Matcher...conditions){
+    public List<ENTITY> query(Page page, List<Order> orders, Matcher...conditions){
         Query query = ActionBuilderFactory.getBuilder(ActionMode.QUERY, table, shardStrategy).build();
         query.setQueryFields(tableColumns);
         query.addConditions(Arrays.asList(conditions));
         query.setOrders(orders);
-        query.setPageModel(pageModel);
+        query.setPage(page);
         List<ENTITY> list = magicDataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
         return CollectionUtils.isEmpty(list) ? new ArrayList<ENTITY>() : list;
     }
@@ -351,7 +352,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         }else {
             for(int i=0; i<keyFields.size(); i++) {
 
-                Method fieldGetMethod = GenericMapper.getMethod(entityClass, keyFields.get(i), MethodType.GET);
+                Method fieldGetMethod = MapperContextHolder.getMethod(entityClass, keyFields.get(i), MethodType.GET);
                 try {
                     String keyColumn = keyColumns.get(i);
                     Object keyValue = fieldGetMethod.invoke(key); //非基本类型主键通过反射调用get method获取键值
@@ -378,7 +379,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
 
         for(int i=0; i<keyFields.size(); i++) {
 
-            Method fieldGetMethod = GenericMapper.getMethod(entityClass, keyFields.get(i), MethodType.GET);
+            Method fieldGetMethod = MapperContextHolder.getMethod(entityClass, keyFields.get(i), MethodType.GET);
             try {
                 String keyColumn = keyColumns.get(i);
                 Object keyValue = fieldGetMethod.invoke(entity);
@@ -399,12 +400,12 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         Map<String, Object> dataMap = new HashMap<String, Object>();
         for(String column : columns) {
             Object value = null;
-            Field field = GenericMapper.getFieldWithColumn(entityClass, column);
+            Field field = MapperContextHolder.getFieldWithColumn(entityClass, column);
             if(field == null) {
                 throw new RuntimeException("column [" + column + "] has no appropriate field!");
             }
 
-            Method getMethod = GenericMapper.getMethod(entityClass, field, MethodType.GET);
+            Method getMethod = MapperContextHolder.getMethod(entityClass, field, MethodType.GET);
             if(getMethod == null) {
                 throw new RuntimeException("field [" + field.getName() + "] has no get method!");
             }

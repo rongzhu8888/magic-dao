@@ -4,7 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import pers.zr.magic.dao.constants.ActionMode;
 import pers.zr.magic.dao.order.Order;
-import pers.zr.magic.dao.page.PageModel;
+import pers.zr.magic.dao.page.Page;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ public class Query extends ConditionAction {
 
     private List<String> queryFields;
 
-    private PageModel pageModel;
+    private Page page;
 
     private List<Order> orders;
 
@@ -25,8 +25,8 @@ public class Query extends ConditionAction {
         this.queryFields = queryFields;
     }
 
-    public void setPageModel(PageModel pageModel) {
-        this.pageModel = pageModel;
+    public void setPage(Page page) {
+        this.page = page;
     }
 
     public void setOrders(List<Order> orders) {
@@ -67,9 +67,9 @@ public class Query extends ConditionAction {
             }
 
             //分页
-            if(null != pageModel) {
-                int limit = pageModel.getPageSize();
-                int offset = (pageModel.getPageNumber() - 1) * limit;
+            if(null != page) {
+                int limit = page.getPageSize();
+                int offset = (page.getPageNo() - 1) * limit;
                 sqlBuilder.append("LIMIT ? OFFSET ? ");
             }
 
@@ -91,9 +91,9 @@ public class Query extends ConditionAction {
 
         List<Object> paramsList = getConParams();
         //分页
-        if(null != pageModel) {
-            int limit = pageModel.getPageSize();
-            int offset = (pageModel.getPageNumber() - 1) * limit;
+        if(null != page) {
+            int limit = page.getPageSize();
+            int offset = (page.getPageNo() - 1) * limit;
             paramsList.add(limit);
             paramsList.add(offset);
         }

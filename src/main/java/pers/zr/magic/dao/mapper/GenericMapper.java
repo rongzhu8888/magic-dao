@@ -26,77 +26,6 @@ public class GenericMapper<ENTITY extends Serializable> implements RowMapper<ENT
         this.entityClass = entityClass;
     }
 
-    private static Map<Class<?>, Map<Field, Method>> settersMap = new HashMap<Class<?>, Map<Field, Method>>();
-
-    private static Map<Class<?>, Map<Field, Method>> gettersMap = new HashMap<Class<?>, Map<Field, Method>>();
-
-    private static Map<Class<?>, Map<String, Field>> fieldsMap = new HashMap<Class<?>, Map<String, Field>>();
-
-
-    public static void setFieldWithColumn(Class<?> clazz, String column, Field field) {
-        Map<String, Field> colFieldMap = fieldsMap.get(clazz);
-        if(null == colFieldMap) {
-            colFieldMap = new HashMap<String, Field>();
-            fieldsMap.put(clazz, colFieldMap);
-        }
-        colFieldMap.put(column, field);
-    }
-
-    public static Field getFieldWithColumn(Class<?> clazz, String column) {
-        Field field = null;
-        Map<String, Field> colFieldMap = fieldsMap.get(clazz);
-        if(null != colFieldMap) {
-            field = colFieldMap.get(column);
-        }
-        return field;
-    }
-
-    public static Method getMethod(Class<?> clazz, Field field, MethodType type) {
-        Method method = null;
-        Map<Field, Method> methodMap = getMethodMap(clazz, field, type);
-        if(methodMap != null) {
-            method = methodMap.get(field);
-        }
-        return method;
-
-    }
-
-    public static void setMethod(Class<?> clazz, Field field, Method method, MethodType type) {
-        Map<Field, Method> methodMap = getMethodMap(clazz, field, type);
-        if(methodMap == null) {
-            methodMap = new HashMap<Field, Method>();
-            if(MethodType.GET.equals(type)) {
-                gettersMap.put(clazz, methodMap);
-
-            }else if(MethodType.SET.equals(type)) {
-                settersMap.put(clazz, methodMap);
-
-            }else {
-                throw new RuntimeException("Invalid Method type");
-            }
-
-        }
-        methodMap.put(field, method);
-    }
-
-
-    private static Map<Field, Method> getMethodMap(Class<?> clazz, Field field, MethodType type) {
-        Map<Field, Method> methodMap;
-        if(MethodType.GET.equals(type)) {
-            methodMap = gettersMap.get(clazz);
-
-        }else if(MethodType.SET.equals(type)) {
-            methodMap = settersMap.get(clazz);
-
-        }else {
-            throw new RuntimeException("Invalid Method type");
-        }
-
-        return methodMap;
-    }
-
-
-
     @Override
     public ENTITY mapRow(ResultSet rs, int i) throws SQLException {
         ENTITY entity;
@@ -105,14 +34,21 @@ public class GenericMapper<ENTITY extends Serializable> implements RowMapper<ENT
             ResultSetMetaData meta = rs.getMetaData();
             for(int k=1; k<=meta.getColumnCount(); k++) {
                 String column = meta.getColumnName(k);
-                Method setMethod = getMethod(entityClass, getFieldWithColumn(entityClass, column), MethodType.SET);
+                Field field = MapperContextHolder.getFieldWithColumn(entityClass, column);
+                if(field == null) {
+                    continue;
+                }
+                Method setMethod = MapperContextHolder.getMethod(entityClass, field, MethodType.SET);
+                if(setMethod == null) {
+                    continue;
+                }
                 Object value = getValue4Type(rs, column, setMethod.getParameterTypes()[0]);
                 if(value != null) {
                     setMethod.invoke(entity, value);
                 }
             }
         } catch (Exception e) {
-            log.error("error when bind data");
+            log.error("Failed to bind data to entity", e);
             throw new SQLException(e);
         }
         return entity;
