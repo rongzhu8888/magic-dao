@@ -99,7 +99,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         }
 
         //获取实体类的属性集合
-        Set<Field> fields = ClassUtil.getAllFileds(entityClass);
+        Set<Field> fields = ClassUtil.getAllFields(entityClass);
         if(CollectionUtils.isEmpty(fields)) {
             throw new RuntimeException("Class [" + entityClass.getName() +"] has no fields!");
         }

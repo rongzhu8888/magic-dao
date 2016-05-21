@@ -21,7 +21,7 @@ public class ClassUtil {
         return type.getActualTypeArguments();
     }
 
-    public static Set<Field> getAllFileds(Class<?> entityClass) {
+    public static Set<Field> getAllFields(Class<?> entityClass) {
 
         // 获取本类的所有字段
         Set<Field> fs = new HashSet<Field>();
@@ -31,7 +31,7 @@ public class ClassUtil {
         // 递归获取父类的所有字段
         Class<?> superClass = entityClass.getSuperclass();
         if (!superClass.equals(Object.class)) {
-            fs.addAll(getAllFileds(superClass));
+            fs.addAll(getAllFields(superClass));
         }
 
         return fs;
