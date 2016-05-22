@@ -42,7 +42,7 @@
 	</bean>
 
 	<bean id="singleDataSource" class="pers.zr.magic.dao.MagicSingleDataSource">
-		<property name="dataSource" ref="master" />
+		<property name="dataSource" ref="myDataSource" />
 	</bean>
 
 
