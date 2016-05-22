@@ -3,6 +3,7 @@ package pers.zr.magic.dao;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.util.CollectionUtils;
 import pers.zr.magic.dao.constants.ActionMode;
 
 import javax.sql.DataSource;
@@ -79,6 +80,23 @@ public class MagicMultiDataSource implements MagicDataSource {
             throw new RuntimeException("Invalid action mode!");
         }
 
+    }
+
+    @Override
+    public DataSource getJdbcDataSource(ActionMode actionMode) {
+        DataSource dataSource;
+        if(actionMode == null) {
+            throw new RuntimeException("action mode can not be null!");
+        }
+        if(ActionMode.QUERY != actionMode) {
+            dataSource = master;
+        }else if(CollectionUtils.isEmpty(slaves)) {
+            dataSource = null;
+        }else {
+            int randomSlaveIndex = new Random().nextInt(slaves.size());
+            dataSource = slaves.get(randomSlaveIndex);
+        }
+        return dataSource;
     }
 
     public void setMaster(DataSource master) {

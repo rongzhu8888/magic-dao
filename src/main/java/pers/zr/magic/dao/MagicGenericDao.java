@@ -301,7 +301,6 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         Query query = ActionBuilderFactory.getBuilder(ActionMode.QUERY, table, shardStrategy).build();
         query.setQueryFields(tableColumns);
         query.addConditions(Arrays.asList(conditions));
-        System.out.println(query.getParams()[0]);
         List<ENTITY> list = magicDataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
         return CollectionUtils.isEmpty(list) ? new ArrayList<ENTITY>() : list;
     }

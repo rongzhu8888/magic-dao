@@ -43,6 +43,11 @@ public class MagicSingleDataSource implements MagicDataSource {
         return jdbcTemplate;
     }
 
+    @Override
+    public DataSource getJdbcDataSource(ActionMode actionMode) {
+        return dataSource;
+    }
+
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
     }
