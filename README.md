@@ -10,7 +10,7 @@
 
 ## 设计说明  ##
 
-
+...
 
 ## 使用方法 ##
 
@@ -267,4 +267,6 @@ MagicSingleDataSource和MagicMultiDataSource都实现了接口MagicDataSource
 
 ## TODO ##
 
- 发布magic-dao到maven中央仓库中
+ 1. 发布magic-dao到maven中央仓库中
+ 2. 完成设计说明
+ 3. 实现v1.0.1：支持分库机制
