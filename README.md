@@ -17,226 +17,227 @@
 ### 3.1 数据源配置 ###
 
 
-**>>>单数据源**
+- 单数据源
 
 
-	<bean id="myDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-		<property name="user" value="${mysql.username}" />
-		<property name="password" value="${mysql.password}" />
-		<property name="driverClass" value="${mysql.driver_class}" />
-		<property name="jdbcUrl" value="${mysql.url}" />
-		<property name="maxPoolSize" value="${mysql.maxPoolSize}" />
-		<property name="minPoolSize" value="${mysql.minPoolSize}" />
-		<property name="initialPoolSize" value="${mysql.initialPoolSize}" />
-		<property name="maxIdleTime" value="${mysql.maxIdleTime}" />
-		<property name="checkoutTimeout" value="${mysql.checkoutTimeout}" />
-		<property name="acquireIncrement" value="${mysql.acquireIncrement}" />
-		<property name="acquireRetryAttempts" value="${mysql.acquireRetryAttempts}" />
-		<property name="acquireRetryDelay" value="${mysql.acquireRetryDelay}" />
-		<property name="autoCommitOnClose" value="${mysql.autoCommitOnClose}" />
-		<property name="automaticTestTable" value="${mysql.automaticTestTable}" />
-		<property name="breakAfterAcquireFailure" value="${mysql.breakAfterAcquireFailure}" />
-		<property name="idleConnectionTestPeriod" value="${mysql.idleConnectionTestPeriod}" />
-		<property name="maxStatements" value="${mysql.maxStatements}" />
-		<property name="maxStatementsPerConnection" value="${mysql.maxStatementsPerConnection}" />
-	</bean>
+		<bean id="myDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+			<property name="user" value="${mysql.username}" />
+			<property name="password" value="${mysql.password}" />
+			<property name="driverClass" value="${mysql.driver_class}" />
+			<property name="jdbcUrl" value="${mysql.url}" />
+			<property name="maxPoolSize" value="${mysql.maxPoolSize}" />
+			<property name="minPoolSize" value="${mysql.minPoolSize}" />
+			<property name="initialPoolSize" value="${mysql.initialPoolSize}" />
+			<property name="maxIdleTime" value="${mysql.maxIdleTime}" />
+			<property name="checkoutTimeout" value="${mysql.checkoutTimeout}" />
+			<property name="acquireIncrement" value="${mysql.acquireIncrement}" />
+			<property name="acquireRetryAttempts" value="${mysql.acquireRetryAttempts}" />
+			<property name="acquireRetryDelay" value="${mysql.acquireRetryDelay}" />
+			<property name="autoCommitOnClose" value="${mysql.autoCommitOnClose}" />
+			<property name="automaticTestTable" value="${mysql.automaticTestTable}" />
+			<property name="breakAfterAcquireFailure" value="${mysql.breakAfterAcquireFailure}" />
+			<property name="idleConnectionTestPeriod" value="${mysql.idleConnectionTestPeriod}" />
+			<property name="maxStatements" value="${mysql.maxStatements}" />
+			<property name="maxStatementsPerConnection" value="${mysql.maxStatementsPerConnection}" />
+		</bean>
 
-	<bean id="singleDataSource" class="pers.zr.magic.dao.MagicSingleDataSource">
-		<property name="dataSource" ref="myDataSource" />
-	</bean>
-
-
-
-**>>>多数据源（读写分离）**
-
-默认写master库，读slave库（如果开发者需要定制哪些service或者业务需要读master库，请见**3.7 读写分离**模块）
+		<bean id="singleDataSource" class="pers.zr.magic.dao.MagicSingleDataSource">
+			<property name="dataSource" ref="myDataSource" />
+		</bean>
 
 
-	<bean id="master" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-		...
-	</bean>
 
-	<bean id="slave1" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-		...
-	</bean>
+- 多数据源（读写分离)
 
-	<bean id="slave2" class="com.mchange.v2.c3p0.ComboPooledDataSource">
-		...
-	</bean>
+	默认写master库，读slave库（如果开发者需要定制哪些service或者业务需要读master库，请见**3.7 读写分离**模块）
 
-	<bean id="multiDataSource" class="pers.zr.magic.dao.MagicMultiDataSource">
-		<property name="master" ref="master" />
-		<property name="slaves">
-			<list>
-				<ref bean="slave1" />
-				<ref bean="slave2" />
-			</list>
-		</property>
-	</bean>
+
+		<bean id="master" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+			...
+		</bean>
+
+		<bean id="slave1" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+			...
+		</bean>
+
+		<bean id="slave2" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+			...
+		</bean>
+
+		<bean id="multiDataSource" class="pers.zr.magic.dao.MagicMultiDataSource">
+			<property name="master" ref="master" />
+			<property name="slaves">
+				<list>
+					<ref bean="slave1" />
+					<ref bean="slave2" />
+				</list>
+			</property>
+		</bean>
 
 
 ### 3.2 Po对象与表注解映射 ###
 
 **四种注解：**
 
-- @Table：实体类注解，表示当前实体对应哪个表
+@Table：实体类注解，表示当前实体对应哪个表
 
-- @Key：实体类属性注解，表示当前属性对应的字段为主键
+@Key：实体类属性注解，表示当前属性对应的字段为主键
 
-- @Column：实体类属性注解，表示当前属性对应表中的哪个字段
+@Column：实体类属性注解，表示当前属性对应表中的哪个字段
 
-- @Shard：实体类注解，表示与当前实体对应的表采取的分表机制
-
-
-**>>>普通唯一主键**
-
-	@Table(name = "mc_app")
-	public class AppPo implements Serializable {
-
-		@Key(column = "app_id")
-	    private String appId;
-
-	    @Column(value = "app_name")
-	    private String appName;
-
-	    @Column(value = "app_code")
-	    private String appCode;
-
-	    @Column(value = "group_id")
-	    private String groupId;
-
-	    @Column(value = "create_time")
-	    private Date createTime;
-
-	    @Column(value = "update_time", readOnly = true)
-	    private Date updateTime;
-
-	    ... <省略getXxx和setXxx方法>
-	}
-
-**>>>自增唯一主键**
-
-	@Table(name = "mc_app")
-	public class AppPo implements Serializable {
-
-		@Key(column = "id", autoIncrement = true)
-	    private Long id;
-
-	    @Column(value = "app_name")
-	    private String appName;
-
-	    @Column(value = "app_code")
-	    private String appCode;
-
-	    @Column(value = "group_id")
-	    private String groupId;
-
-	    @Column(value = "create_time")
-	    private Date createTime;
-
-	    @Column(value = "update_time", readOnly = true)
-	    private Date updateTime;
-
-	    ... <省略getXxx和setXxx方法>
-	}
+@Shard：实体类注解，表示与当前实体对应的表采取的分表机制
 
 
-**>>>联合主键**
+- 普通唯一主键
 
-	public class UserRoleKey implements Serializable {
+		@Table(name = "mc_app")
+		public class AppPo implements Serializable {
 
-	    @Key(column = "user_id")
-	    private Long userId;
+			@Key(column = "app_id")
+		    private String appId;
 
-	    @Key(column = "role_id")
-		private String roleId;
+		    @Column(value = "app_name")
+		    private String appName;
 
-		... <省略getXxx和setXxx方法>
+		    @Column(value = "app_code")
+		    private String appCode;
 
-	}
+		    @Column(value = "group_id")
+		    private String groupId;
 
-	...
+		    @Column(value = "create_time")
+		    private Date createTime;
 
-	@Table(name = "mc_user_role")
-	public class UserRolePo extends UserRoleKey {
+		    @Column(value = "update_time", readOnly = true)
+		    private Date updateTime;
 
-		@Column(value = "create_time")
-	    private Date createTime;
+		    ... <省略getXxx和setXxx方法>
+		}
 
-		... <省略getXxx和setXxx方法>
+- 自增唯一主键
 
-	}
+		@Table(name = "mc_app")
+		public class AppPo implements Serializable {
+
+			@Key(column = "id", autoIncrement = true)
+		    private Long id;
+
+		    @Column(value = "app_name")
+		    private String appName;
+
+		    @Column(value = "app_code")
+		    private String appCode;
+
+		    @Column(value = "group_id")
+		    private String groupId;
+
+		    @Column(value = "create_time")
+		    private Date createTime;
+
+		    @Column(value = "update_time", readOnly = true)
+		    private Date updateTime;
+
+		    ... <省略getXxx和setXxx方法>
+		}
 
 
+- 联合主键
 
-**>>>分表**
+		//主键对象
+		public class UserRoleKey implements Serializable {
 
-	@Table(name = "mc_orders")
-	@Shard(shardCount = 32, shardColumn = "user_id", separator = "_")
-	public class OrderPo implements Serializable {
-		@Key(column = "order_id")
-		private Long orderId;
+		    @Key(column = "user_id")
+		    private Long userId;
 
-		@Column(value = "user_id")
-		private Long userId;
+		    @Key(column = "role_id")
+			private String roleId;
 
-		@Column(value = "create_time")
-		private Date createTime;
+			... <省略getXxx和setXxx方法>
+
+		}
 
 		...
 
-		... <省略getXxx和setXxx方法>
+		@Table(name = "mc_user_role")
+		public class UserRolePo extends UserRoleKey {
 
-	}
+			@Column(value = "create_time")
+		    private Date createTime;
+
+			... <省略getXxx和setXxx方法>
+
+		}
+
+
+
+- 分表
+
+		@Table(name = "mc_orders")
+		@Shard(shardCount = 32, shardColumn = "user_id", separator = "_")
+		public class OrderPo implements Serializable {
+			@Key(column = "order_id")
+			private Long orderId;
+
+			@Column(value = "user_id")
+			private Long userId;
+
+			@Column(value = "create_time")
+			private Date createTime;
+
+			...
+
+			... <省略getXxx和setXxx方法>
+
+		}
 
 
 
 ###3.3 Dao接口与实现类 ###
 
-**>>>唯一主键**
+- 唯一主键
 
-	//单表无需写任何方法，继承MagicDao接口即可
-	public interface MagicAppDao extends MagicDao<Long, AppPo> {
+		//单表无需写任何方法，继承MagicDao接口即可
+		public interface MagicAppDao extends MagicDao<Long, AppPo> {
 
-	}
+		}
 
-	...
+		...
 
-	//单表无需实现任何方法，继承MagicGenericDao类即可
-	public class MagicAppDaoImpl extends MagicGenericDao<Long, AppPo> implements MagicAppDao {
+		//单表无需实现任何方法，继承MagicGenericDao类即可
+		public class MagicAppDaoImpl extends MagicGenericDao<Long, AppPo> implements MagicAppDao {
 
-	}
+		}
 
 
-**>>>联合主键**
+- 联合主键
 
-	//单表无需写任何方法，继承MagicDao接口即可
-	public interface UserRoleDao extends MagicDao<UserRoleKey, UserRolePo> {
+		//单表无需写任何方法，继承MagicDao接口即可
+		public interface UserRoleDao extends MagicDao<UserRoleKey, UserRolePo> {
 
-	}
+		}
 
-	...
+		...
 
-	//单表无需实现任何方法，继承MagicGenericDao类即可
-	public class UserRoleDaoImpl extends MagicGenericDao<UserRoleKey, UserRolePo> implements MagicAppDao {
+		//单表无需实现任何方法，继承MagicGenericDao类即可
+		public class UserRoleDaoImpl extends MagicGenericDao<UserRoleKey, UserRolePo> implements MagicAppDao {
 
-	}
+		}
 
 
 ###3.4 Dao实例spring托管###
 由于spring单例模式的lazy-init属性默认值为false，即容器启动时，所有的Dao实例即被创建，且在创建过程中，父类MagicGenericDao的默认构造器将被调用，用以扫描并初始化当前Dao所依赖的Po对象与表的映射关系以及Po字段与setXxx()和getXxx()的映射关系。所以，无需担心反射效率问题。
 
-	<!-- 单数据源 -->
-	<bean id="appDao" class="demo.pers.zr.magic.dao.app.MagicAppDaoImpl" >
-		<property name="magicDataSource" ref="singleDataSource" />
-	</bean>
+- 单数据源bean
 
-	或者
+		<bean id="appDao" class="demo.pers.zr.magic.dao.app.MagicAppDaoImpl" >
+			<property name="magicDataSource" ref="singleDataSource" />
+		</bean>
 
-	<!-- 多数据源（读写分离） -->
-	<bean id="appDao" class="demo.pers.zr.magic.dao.app.MagicAppDaoImpl" >
-		<property name="magicDataSource" ref="multiDataSource" />
-	</bean>
+- 多数据源bean
+
+		<bean id="appDao" class="demo.pers.zr.magic.dao.app.MagicAppDaoImpl" >
+			<property name="magicDataSource" ref="multiDataSource" />
+		</bean>
 
 ###3.5 事务 ###
 直接使用spring的DataSourceTransactionManager即可，注意多数据源场景下DataSourceTransactionManager的dataSource属性应该配置为master。
@@ -272,37 +273,39 @@ MagicSingleDataSource和MagicMultiDataSource都实现了接口MagicDataSource
 
 **说明：** （1）@DataSource注解在类上，表示该类所有的方法都有此效果；（2）方法级别的注解较类级别优先级高。
 
-- 类级别注解
+- DataSource注解
 
-		//对该类中所有方法均有效
-		@DataSource(type = DataSourceType.MASTER)
-		public class AppServiceImpl {
+	- 类级别注解
+
+			//对该类中所有方法均有效
+			@DataSource(type = DataSourceType.MASTER)
+			public class AppServiceImpl {
+
+				...
+
+			}
+
+
+	- 方法级别注解
+
+
+			public class UserServiceImpl {
+
+			//仅对该方法有效
+			@DataSource(type = DataSourceType.MASTER)
+			public void getAttentionList() {
+
+				...
+
+			}
 
 			...
 
-		}
-
-
-- 方法级别注解
-
-
-		public class UserServiceImpl {
-
-		//仅对该方法有效
-		@DataSource(type = DataSourceType.MASTER)
-		public void getAttentionList() {
-
-			...
-
-		}
-
-		...
-
-		}
+			}
 
 
 
-	**AOP配置**
+- AOP配置
 
 		<bean id="dataSourceAop" class="pers.zr.magic.dao.aop.ReadingDataSourceAop"></bean>
 		<aop:config>
