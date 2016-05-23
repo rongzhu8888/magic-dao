@@ -6,6 +6,9 @@ package pers.zr.magic.dao.utils;
 public class StringUtil {
 
     public static void main(String[]args) {
+
+
+
     }
 
 }
