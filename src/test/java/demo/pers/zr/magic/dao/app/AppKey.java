@@ -1,6 +1,6 @@
 package demo.pers.zr.magic.dao.app;
 
-import pers.zr.magic.dao.annotation.Key;
+import pers.zr.opensource.magic.dao.annotation.Key;
 
 import java.io.Serializable;
 

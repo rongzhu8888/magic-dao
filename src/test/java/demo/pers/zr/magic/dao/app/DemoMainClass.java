@@ -2,8 +2,6 @@ package demo.pers.zr.magic.dao.app;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import pers.zr.magic.dao.matcher.LeftLikeMatcher;
-import pers.zr.magic.dao.matcher.Matcher;
 
 import java.util.List;
 

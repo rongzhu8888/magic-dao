@@ -2,12 +2,12 @@ package test.pers.zr.magic.dao.core.action;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import pers.zr.magic.dao.action.ActionBuilderContainer;
-import pers.zr.magic.dao.action.Delete;
-import pers.zr.magic.dao.action.DeleteBuilder;
-import pers.zr.magic.dao.matcher.*;
+import pers.zr.opensource.magic.dao.action.ActionBuilderContainer;
+import pers.zr.opensource.magic.dao.action.Delete;
+import pers.zr.opensource.magic.dao.action.DeleteBuilder;
+import pers.zr.opensource.magic.dao.matcher.LeftLikeMatcher;
+import pers.zr.opensource.magic.dao.matcher.Matcher;
 import test.pers.zr.magic.dao.core.BaseJunit;
-import pers.zr.magic.dao.constants.ConditionType;
 
 /**
  * Created by zhurong on 2016-5-3.

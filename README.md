@@ -41,7 +41,7 @@
 			<property name="maxStatementsPerConnection" value="${mysql.maxStatementsPerConnection}" />
 		</bean>
 
-		<bean id="singleDataSource" class="pers.zr.magic.dao.MagicSingleDataSource">
+		<bean id="singleDataSource" class="MagicSingleDataSource">
 			<property name="dataSource" ref="myDataSource" />
 		</bean>
 
@@ -64,7 +64,7 @@
 			...
 		</bean>
 
-		<bean id="multiDataSource" class="pers.zr.magic.dao.MagicMultiDataSource">
+		<bean id="multiDataSource" class="MagicMultiDataSource">
 			<property name="master" ref="master" />
 			<property name="slaves">
 				<list>
@@ -307,7 +307,7 @@ MagicSingleDataSource和MagicMultiDataSource都实现了接口MagicDataSource
 
 - AOP配置
 
-		<bean id="dataSourceAop" class="pers.zr.magic.dao.aop.ReadingDataSourceAop"></bean>
+		<bean id="dataSourceAop" class="ReadingDataSourceAop"></bean>
 		<aop:config>
 			<aop:aspect ref="dataSourceAop">
 				<aop:around method="determine"

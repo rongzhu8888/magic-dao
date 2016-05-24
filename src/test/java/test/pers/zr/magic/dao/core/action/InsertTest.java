@@ -2,9 +2,9 @@ package test.pers.zr.magic.dao.core.action;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import pers.zr.magic.dao.action.ActionBuilderContainer;
-import pers.zr.magic.dao.action.Insert;
-import pers.zr.magic.dao.action.InsertBuilder;
+import pers.zr.opensource.magic.dao.action.ActionBuilderContainer;
+import pers.zr.opensource.magic.dao.action.Insert;
+import pers.zr.opensource.magic.dao.action.InsertBuilder;
 import test.pers.zr.magic.dao.core.BaseJunit;
 
 import java.util.Date;

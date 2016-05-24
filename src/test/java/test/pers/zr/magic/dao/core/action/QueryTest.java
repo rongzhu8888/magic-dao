@@ -2,13 +2,11 @@ package test.pers.zr.magic.dao.core.action;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import pers.zr.magic.dao.action.ActionBuilderContainer;
-import pers.zr.magic.dao.action.Query;
-import pers.zr.magic.dao.action.QueryBuilder;
+import pers.zr.opensource.magic.dao.action.ActionBuilderContainer;
+import pers.zr.opensource.magic.dao.action.Query;
+import pers.zr.opensource.magic.dao.action.QueryBuilder;
 import test.pers.zr.magic.dao.core.BaseJunit;
-import pers.zr.magic.dao.constants.ConditionType;
-import pers.zr.magic.dao.matcher.EqualsMatcher;
-import pers.zr.magic.dao.matcher.LessMatcher;
+import pers.zr.opensource.magic.dao.matcher.LessMatcher;
 
 /**
  * Created by zhurong on 2016-5-3.

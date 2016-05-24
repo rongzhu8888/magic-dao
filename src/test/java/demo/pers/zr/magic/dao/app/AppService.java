@@ -1,8 +1,9 @@
 package demo.pers.zr.magic.dao.app;
 
-import pers.zr.magic.dao.annotation.DataSource;
-import pers.zr.magic.dao.constants.DataSourceType;
-import pers.zr.magic.dao.matcher.*;
+import pers.zr.opensource.magic.dao.annotation.DataSource;
+import pers.zr.opensource.magic.dao.constants.DataSourceType;
+import pers.zr.opensource.magic.dao.matcher.LeftLikeMatcher;
+import pers.zr.opensource.magic.dao.matcher.Matcher;
 
 import java.util.List;
 

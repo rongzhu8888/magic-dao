@@ -2,15 +2,12 @@ package test.pers.zr.magic.dao.core.action;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
-import pers.zr.magic.dao.action.ActionBuilderContainer;
-import pers.zr.magic.dao.action.Update;
-import pers.zr.magic.dao.action.UpdateBuilder;
-import pers.zr.magic.dao.constants.ConditionType;
-import pers.zr.magic.dao.matcher.EqualsMatcher;
-import pers.zr.magic.dao.matcher.LikeMatcher;
+import pers.zr.opensource.magic.dao.action.ActionBuilderContainer;
+import pers.zr.opensource.magic.dao.action.Update;
+import pers.zr.opensource.magic.dao.action.UpdateBuilder;
+import pers.zr.opensource.magic.dao.matcher.EqualsMatcher;
 import test.pers.zr.magic.dao.core.BaseJunit;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 

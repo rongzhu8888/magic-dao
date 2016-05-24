@@ -2,9 +2,9 @@ package test.pers.zr.magic.dao.core;
 
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.junit.BeforeClass;
-import pers.zr.magic.dao.MagicSingleDataSource;
-import pers.zr.magic.dao.shard.ShardStrategy;
-import pers.zr.magic.dao.action.ActionTable;
+import pers.zr.opensource.magic.dao.MagicSingleDataSource;
+import pers.zr.opensource.magic.dao.shard.ShardStrategy;
+import pers.zr.opensource.magic.dao.action.ActionTable;
 
 /**
  * Created by zhurong on 2016/4/30.

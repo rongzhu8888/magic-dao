@@ -4,8 +4,8 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-import pers.zr.magic.dao.MagicMultiDataSource;
-import pers.zr.magic.dao.constants.ActionMode;
+import pers.zr.opensource.magic.dao.MagicMultiDataSource;
+import pers.zr.opensource.magic.dao.constants.ActionMode;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;

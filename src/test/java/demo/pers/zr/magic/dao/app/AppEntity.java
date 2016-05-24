@@ -1,9 +1,7 @@
 package demo.pers.zr.magic.dao.app;
 
-import pers.zr.magic.dao.annotation.Column;
-import pers.zr.magic.dao.annotation.Key;
-import pers.zr.magic.dao.annotation.Shard;
-import pers.zr.magic.dao.annotation.Table;
+import pers.zr.opensource.magic.dao.annotation.Column;
+import pers.zr.opensource.magic.dao.annotation.Table;
 
 import java.io.Serializable;
 import java.util.Date;

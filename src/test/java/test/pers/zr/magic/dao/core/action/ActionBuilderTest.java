@@ -2,9 +2,9 @@ package test.pers.zr.magic.dao.core.action;
 
 import org.junit.Assert;
 import org.junit.Test;
-import pers.zr.magic.dao.action.*;
+import pers.zr.opensource.magic.dao.action.*;
 import test.pers.zr.magic.dao.core.BaseJunit;
-import pers.zr.magic.dao.constants.ActionMode;
+import pers.zr.opensource.magic.dao.constants.ActionMode;
 
 import static org.junit.Assert.*;
 
