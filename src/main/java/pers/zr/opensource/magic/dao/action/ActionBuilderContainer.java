@@ -6,9 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- *  ActionBuilder容器
+ *  ActionBuilderContainer
  *
- *  缓存ActionBuilder，同一张表的多次同类型操作（如查询）共用一个ActionBuilder,减少对象创建数量
+ *  ActionBuilder cache
  *
  * Created by zhurong on 2016-4-29.
  */

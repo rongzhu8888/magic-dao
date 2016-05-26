@@ -50,34 +50,34 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         this.magicDataSource = magicDataSource;
     }
 
-    /** 实体类 */
+    /** entity class */
     private Class<ENTITY> entityClass;
 
-    /** 主键类 */
+    /** key class */
     private Class<KEY> keyClass;
 
-    /** 表中与实体主键属性对应的字段列表 */
+    /** key columns of table */
     private List<String> keyColumns;
 
-    /** 实体中主键属性列表*/
+    /** key fields of entity*/
     private List<Field> keyFields;
 
-    /** 表中与实体属性对应的字段列表*/
+    /** columns of table, match the annotated fields of entity*/
     private List<String> tableColumns;
 
-    /** 表中与实体属性对应且需要insert的字段列表*/
+    /** columns of table to insert which matches the annotated fields of entity without auto increment field*/
     private List<String> toInsertColumns;
 
-    /** 表中与实体属性对应且需要update的字段列表*/
+    /** columns of table to update which matches the annotated fields of entity without readOnly field*/
     private List<String> toUpdateColumns;
 
-    /** 表 */
+    /** table */
     private ActionTable table;
 
-    /** 分表策略 */
+    /** shard strategy */
     private ShardStrategy shardStrategy;
 
-    /** 数据映射对象 */
+    /** Generic RowMapper for set data */
     protected RowMapper<ENTITY> rowMapper;
 
 
@@ -88,30 +88,30 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
             log.info("initialize instance of " + getClass());
         }
 
-        //获取实体类和主键类
+        //Get entity class & key class
         Type[] types = ClassUtil.getGenericTypes(getClass());
         keyClass = (Class<KEY>)types[0];
         entityClass = (Class<ENTITY>)types[1];
 
-        //获取实体类对应的表
+        //get table matched by entity (analysis @Table)
         Table tableAnnotation = entityClass.getAnnotation(Table.class);
         if(tableAnnotation == null) {
             throw new RuntimeException("Class [" + entityClass.getName() +"] must be annotated with @Table!");
         }
 
-        //获取实体类的属性集合
+        //get all fields of entity
         Set<Field> fields = ClassUtil.getAllFields(entityClass);
         if(CollectionUtils.isEmpty(fields)) {
             throw new RuntimeException("Class [" + entityClass.getName() +"] has no fields!");
         }
 
-        //获取实体类的方法集合
+        //get all methods of entity
         Set<Method> methods = ClassUtil.getAllMethods(entityClass);
         if(CollectionUtils.isEmpty(methods)) {
             throw new RuntimeException("Class [" + entityClass.getName() +"] has no methods!");
         }
 
-        //根据@Key和@Column获取字段（包括主键）列表，以及与属性的映射关系
+        //analysis @Key and @Column
         keyColumns = new ArrayList<String>();
         keyFields = new ArrayList<Field>();
         tableColumns = new ArrayList<String>();
@@ -124,10 +124,8 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
             if(null != keyAnnotation) {
                 keyColumns.add(keyAnnotation.column());
                 keyFields.add(field);
-
                 tableColumns.add(keyAnnotation.column());
 
-                //非自增主键值需要写入
                 if(!keyAnnotation.autoIncrement()) {
                     toInsertColumns.add(keyAnnotation.column());
                 }
@@ -137,14 +135,13 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
             }else if(columnAnnotation != null) {
                 tableColumns.add(columnAnnotation.value());
 
-                //非只读字段需要写入
                 if(!columnAnnotation.readOnly()) {
                     toInsertColumns.add(columnAnnotation.value());
                 }
                 MapperContextHolder.setFieldWithColumn(entityClass, columnAnnotation.value(), field);
             }
 
-            //获取各属性对应的SET\GET方法
+            //get setter and getter method
             String fieldName = field.getName();
             for(Method method : methods) {
                 String methodName = method.getName();
@@ -168,7 +165,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         table.setKeys(keyColumns.toArray(new String[keyColumns.size()]));
         table.setColumns(tableColumns.toArray(new String[tableColumns.size()]));
 
-        //获取可更新的字段=【toInsertColumns】-【keyColumns】
+        //update columns which inside inserted columns but not key
         toUpdateColumns = new ArrayList<String>();
         for(String column : toInsertColumns) {
             if(!keyColumns.contains(column)) {
@@ -176,10 +173,9 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
             }
         }
 
-        //初始化数据映射对象
         rowMapper = new GenericMapper<ENTITY>(entityClass);
 
-        //获取分表策略
+        //get shard strategy
         Shard shardAnnotation = entityClass.getAnnotation(Shard.class);
         if(null != shardAnnotation) {
             int shardCount = shardAnnotation.shardCount();
@@ -346,7 +342,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
             throw new RuntimeException("no key columns found!");
         }
 
-        if(keyColumns.size() == 1 && ClassUtil.isBasicType(keyClass)) { //单一基本类型主键（如Long,String,int等）,直接取key值
+        if(keyColumns.size() == 1 && ClassUtil.isBasicType(keyClass)) {
             matcherList.add(new EqualsMatcher(table.getKeys()[0], key));
         }else {
             for(int i=0; i<keyFields.size(); i++) {
@@ -354,7 +350,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
                 Method fieldGetMethod = MapperContextHolder.getMethod(entityClass, keyFields.get(i), MethodType.GET);
                 try {
                     String keyColumn = keyColumns.get(i);
-                    Object keyValue = fieldGetMethod.invoke(key); //非基本类型主键通过反射调用get method获取键值
+                    Object keyValue = fieldGetMethod.invoke(key);
                     matcherList.add(new EqualsMatcher(keyColumn, keyValue));
                 } catch (IllegalAccessException e) {
                     log.error(e.getMessage(), e);

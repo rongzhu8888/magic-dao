@@ -22,13 +22,12 @@ public class ClassUtil {
     }
 
     public static Set<Field> getAllFields(Class<?> entityClass) {
-
-        // 获取本类的所有字段
+        //fields of current class
         Set<Field> fs = new HashSet<Field>();
         Collections.addAll(fs, entityClass.getFields());
         Collections.addAll(fs, entityClass.getDeclaredFields());
 
-        // 递归获取父类的所有字段
+        // recursion, fields of super classes
         Class<?> superClass = entityClass.getSuperclass();
         if (!superClass.equals(Object.class)) {
             fs.addAll(getAllFields(superClass));
@@ -39,13 +38,12 @@ public class ClassUtil {
 
 
     public static Set<Method> getAllMethods(Class<?> entityClass) {
-
-        // 获取本类的所有的方法
+        //methods of current class
         Set<Method> ms = new HashSet<Method>();
         Collections.addAll(ms, entityClass.getMethods());
         Collections.addAll(ms, entityClass.getDeclaredMethods());
 
-        // 递归获取父类的所有方法
+        //recursion, methods of super classes
         Class<?> superClass = entityClass.getSuperclass();
         if (!superClass.equals(Object.class)) {
             ms.addAll(getAllMethods(superClass));

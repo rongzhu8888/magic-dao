@@ -5,5 +5,5 @@ package pers.zr.opensource.magic.dao.constants;
  */
 public enum OrderType {
 
-    ASC, DESC;
+    ASC, DESC
 }

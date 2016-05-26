@@ -13,7 +13,9 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * 多数据源，用于读写分离
+ * Multiple DataSource
+ *
+ * For Reading and writing separation
  *
  * Created by zhurong on 2016-4-28.
  */
@@ -41,12 +43,12 @@ public class MagicMultiDataSource implements MagicDataSource {
 
         boolean isNowMasterDataSource;
         if(ActionMode.INSERT == actionMode || ActionMode.UPDATE == actionMode || ActionMode.DELETE == actionMode) {
-            //insert|update|delete操作master
+            //insert|update|delete on master
             isNowMasterDataSource = true;
 
         } else if(ActionMode.QUERY == actionMode){
             if(DataSourceType.MASTER == runtimeReadingDataSourceType.get()) {
-                //运行时强制设置从master读取
+                //force to read from slave
                 isNowMasterDataSource = true;
             }else {
                 isNowMasterDataSource = false;
@@ -84,9 +86,7 @@ public class MagicMultiDataSource implements MagicDataSource {
                 }
             }
 
-            //TODO 自动监控并移除连接断开或者不可用的从库
-
-            //随机返回一个slave
+            //random slave
             int randomSlaveIndex = new Random().nextInt(slaves.size());
             return slaveJdbcTemplates.get(randomSlaveIndex);
         }

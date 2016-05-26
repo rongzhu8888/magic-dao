@@ -12,8 +12,7 @@ import java.lang.reflect.Method;
 
 /**
  *
- * 默认情况下主从分离环境：读从库，写主库。但是某些对实时性要求比较高的场景，
- * 需要读主库。MagicRuntimeDataSourceAop设计便是为了解决此种特殊情况。
+ * Aop to analysis @DataSource annotation, and determine the reading dataSource type: master or slave
  * Created by zhurong on 2016-5-23.
  */
 public class ReadingDataSourceAop {
@@ -31,7 +30,7 @@ public class ReadingDataSourceAop {
                 dataSourceAnnotation = clazz.getAnnotation(DataSource.class);
             }
             DataSourceType currentType = (null != dataSourceAnnotation) ? dataSourceAnnotation.type() : DataSourceType.SLAVE;
-            //set 当前线程运行时的ReadingDataSourceType
+            //set current thread reading dataSource type
             MagicMultiDataSource.runtimeReadingDataSourceType.set(currentType);
             if(log.isDebugEnabled()) {
                 log.debug("invoke service=" + clazz.getName() + "." + method.getName() + ", readingDataSource=" +  currentType);
@@ -40,7 +39,7 @@ public class ReadingDataSourceAop {
         } catch (Throwable t) {
             throw new RuntimeException(t);
         } finally {
-            //remove 当前线程运行时的ReadingDataSourceType
+            //remove current thread reading dataSource type
             MagicMultiDataSource.runtimeReadingDataSourceType.remove();
 
         }

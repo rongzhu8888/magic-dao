@@ -2,17 +2,17 @@ package pers.zr.opensource.magic.dao.shard;
 
 /**
  *
- * 分表策略
+ * Shard Strategy
  *
  * Created by zhurong on 2016-4-28.
  */
 public class ShardStrategy {
 
-    private int shardCount; //分表（片）数量
+    private int shardCount;
 
-    private String shardColumn; //shard字段
+    private String shardColumn;
 
-    private String separator; //连接符
+    private String separator;
 
     public ShardStrategy(int shardCount, String shardColumn, String separator) {
         this.shardCount = shardCount;

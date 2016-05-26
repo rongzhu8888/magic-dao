@@ -13,6 +13,6 @@ public @interface Column {
 
     String value();
 
-    boolean readOnly() default false; //无需insert或者update的字段
+    boolean readOnly() default false; //not need to insert and update
 
 }

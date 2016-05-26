@@ -5,13 +5,13 @@ package pers.zr.opensource.magic.dao.action;
  */
 public class ActionTable {
 
-    /** 表名*/
+    /** table name*/
     private String tableName;
 
-    /** 主键*/
+    /** keys*/
     private String[] keys;
 
-    /** 列*/
+    /** columns*/
     private String[] columns;
 
     public String getTableName() {

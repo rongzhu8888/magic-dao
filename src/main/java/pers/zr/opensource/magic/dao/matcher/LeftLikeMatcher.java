@@ -12,7 +12,7 @@ public class LeftLikeMatcher extends Matcher {
     public LeftLikeMatcher(String column, String value) {
 
         this.column = column;
-        this.value = convertSpecialChar(value, MatchType.LIKE) + "%"; //转义特殊字符
+        this.value = convertSpecialChar(value, MatchType.LIKE) + "%";
     }
 
     @Override

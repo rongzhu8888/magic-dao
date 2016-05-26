@@ -57,7 +57,7 @@ public class Query extends ConditionAction {
             sqlBuilder.append("SELECT ").append(targetFieldsStr).append(" FROM ")
                     .append(tableName).append(" ").append(getConSql());
 
-            //排序
+            //sort
             if(null != orders && orders.size() > 0) {
                 sqlBuilder.append(" ORDER BY ");
                 for(Order order : orders) {
@@ -66,7 +66,7 @@ public class Query extends ConditionAction {
                 sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(","));
             }
 
-            //分页
+            //paging
             if(null != page) {
                 int limit = page.getPageSize();
                 int offset = (page.getPageNo() - 1) * limit;
@@ -90,7 +90,7 @@ public class Query extends ConditionAction {
     public Object[] getParams() {
 
         List<Object> paramsList = getConParams();
-        //分页
+        //paging
         if(null != page) {
             int limit = page.getPageSize();
             int offset = (page.getPageNo() - 1) * limit;

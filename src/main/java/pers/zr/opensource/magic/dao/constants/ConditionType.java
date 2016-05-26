@@ -5,6 +5,6 @@ package pers.zr.opensource.magic.dao.constants;
  */
 public enum  ConditionType {
 
-    AND, OR;
+    AND, OR
 
 }

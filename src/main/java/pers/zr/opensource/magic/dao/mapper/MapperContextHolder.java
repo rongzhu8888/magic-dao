@@ -12,13 +12,13 @@ import java.util.Map;
  */
 public class MapperContextHolder {
 
-    /** 属性-set方法映射*/
+    /** class-field-setMethod*/
     private static Map<Class<?>, Map<Field, Method>> settersMap = new HashMap<Class<?>, Map<Field, Method>>();
 
-    /** 属性-get方法映射*/
+    /** class-field-getMethod*/
     private static Map<Class<?>, Map<Field, Method>> gettersMap = new HashMap<Class<?>, Map<Field, Method>>();
 
-    /** 列名-属性映射*/
+    /** class-column-field*/
     private static Map<Class<?>, Map<String, Field>> fieldsMap = new HashMap<Class<?>, Map<String, Field>>();
 
     public static void setFieldWithColumn(Class<?> clazz, String column, Field field) {

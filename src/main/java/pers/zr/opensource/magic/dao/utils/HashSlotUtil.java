@@ -2,10 +2,6 @@ package pers.zr.opensource.magic.dao.utils;
 
 import java.nio.charset.StandardCharsets;
 
-/**
- * 哈希槽：将不同的key平均分布到N个虚拟节点中 算法：slot = getCRC16(key) % N，等价于 getCRC16(key) & (N-1)
- *
- */
 public class HashSlotUtil {
 	private static final int LOOKUP_TABLE[] = { 0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7, 0x8108,
 			0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD, 0xE1CE, 0xF1EF, 0x1231, 0x0210, 0x3273, 0x2252, 0x52B5, 0x4294,
@@ -88,15 +84,6 @@ public class HashSlotUtil {
 		return getCRC16(bytesKey, 0, bytesKey.length);
 	}
 
-	public static void main(String args[]) {
-		String key = "12353";
-		long start = System.currentTimeMillis();
-		for (int i = 0; i < 1000000; i++) {
-//			getSlot(key, 32);
-			Math.abs(Math.floor((i + 1) / 2 - 1) % 32);
-		}
-		long end = System.currentTimeMillis();
-		System.out.println("costs:" + (end - start));
-	}
+
 
 }

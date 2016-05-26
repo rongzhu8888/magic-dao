@@ -5,5 +5,5 @@ package pers.zr.opensource.magic.dao.constants;
  */
 public enum ActionMode {
 
-    INSERT, UPDATE, DELETE, QUERY;
+    INSERT, UPDATE, DELETE, QUERY
 }

@@ -5,7 +5,6 @@ import pers.zr.opensource.magic.dao.shard.ShardStrategy;
 
 /**
  *
- * 同一张表的多次delete可以公用一个DeleteBuilder，所以需要在内存中缓存该对象
  * Created by zhurong on 2016-4-28.
  */
 public class DeleteBuilder extends ActionBuilder {

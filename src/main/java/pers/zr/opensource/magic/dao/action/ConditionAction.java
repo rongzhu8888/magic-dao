@@ -82,7 +82,7 @@ public abstract class ConditionAction extends Action {
 
                 getMatcherParam(conParamsList, matcher);
 
-                //具有分表策略时，计算实际表名
+                //get actual table name when shard exist
                 if(null != shardStrategy
                         && matcher.getColumn().equalsIgnoreCase(shardStrategy.getShardColumn())) {
                     this.shardTableName = ShardUtil.getShardTableName(table.getTableName(),
