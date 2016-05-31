@@ -88,13 +88,13 @@
 
 **四种注解：**
 
-@Table：实体类注解，表示当前实体对应哪个表
+@Table：实体类注解，表示当前实体对应表名
 
-@Key：实体类属性注解，表示当前属性对应的字段为主键
+@Key：实体属性注解，表示当前属性对应的字段为主键
 
-@Column：实体类属性注解，表示当前属性对应表中的哪个字段
+@Column：实体属性注解，表示当前属性对应表中的字段名
 
-@Shard：实体类注解，表示与当前实体对应的表采取的分表机制
+@TableShard：实体类注解，表示与当前实体对应的表采取的分表策略
 
 
 - 普通唯一主键
@@ -179,10 +179,15 @@
 
 
 
+
 - 分表
 
+
+实现数据分表访问非常简单，只需通过**@TableShard** 注解配置分表策略即可。
+
+
 		@Table(name = "mc_orders")
-		@Shard(shardCount = 32, shardColumn = "user_id", separator = "_")
+		@TableShard(shardCount = 32, shardColumn = "user_id", separator = "_")
 		public class OrderPo implements Serializable {
 			@Key(column = "order_id")
 			private Long orderId;
@@ -198,6 +203,35 @@
 			... <省略getXxx和setXxx方法>
 
 		}
+
+
+**magic-dao** 默认通过**DefaultTableShardHandler** 读取分表策略并根据运行时shard字段的值采用**JedisHashSlot** 算法计算表名，不支持auto-increment字段。
+
+不过，**magic-dao**为开发人员预留了自定义handler的功能，只需实现TableShardHandler接口，并在Spring容器中将该handler实例注入到对应的Dao bean中即可，以实现（针对auto-increment字段或者其它目的）自定义分表逻辑。
+
+
+
+		public class MyTableShardHandler implements TableShardHandler {
+		    @Override
+		    public String getShardTableName(String tableBasicName, int shardCount, String separator, Object columnValue) {
+
+				//实现自己的分表逻辑
+
+				return xxx;
+			}
+	    }
+
+
+...
+
+		<bean id="MyShardHandler" class="test.pers.zr.magic.dao.core.action.MyTableShardHandler" />
+
+		<bean id="appDao" class="demo.pers.zr.magic.dao.app.MagicAppDaoImpl" >
+			<property name="magicDataSource" ref="multiDataSource" />
+			<property name="tableShardHandler" ref="MyShardHandler" />
+		</bean>
+
+
 
 
 

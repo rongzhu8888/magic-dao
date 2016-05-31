@@ -1,7 +1,8 @@
 package pers.zr.opensource.magic.dao.action;
 
 import pers.zr.opensource.magic.dao.constants.ActionMode;
-import pers.zr.opensource.magic.dao.shard.ShardStrategy;
+import pers.zr.opensource.magic.dao.shard.TableShardHandler;
+import pers.zr.opensource.magic.dao.shard.TableShardStrategy;
 
 /**
  *
@@ -10,8 +11,6 @@ import pers.zr.opensource.magic.dao.shard.ShardStrategy;
 public abstract class ActionBuilder {
 
     protected ActionTable table;
-
-    protected ShardStrategy shardStrategy;
 
     public abstract <T extends Action> T build();
 

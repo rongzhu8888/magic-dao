@@ -88,9 +88,11 @@
 		</property>
 	</bean>
 
+	<bean id="shardHandler" class="test.pers.zr.magic.dao.core.action.MyTableShardHandler" />
+
 	<bean id="appDao" class="demo.pers.zr.magic.dao.app.MagicAppDaoImpl" >
 		<property name="magicDataSource" ref="multiDataSource" />
-
+		<!--<property name="tableShardHandler" ref="shardHandler" />-->
 	</bean>
 
 	<bean id="appService" class="demo.pers.zr.magic.dao.app.AppService" >
@@ -105,12 +107,12 @@
 	<!-- 事务注解驱动，标注@Transactional的类和方法将具有事务性 -->
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
-	<bean id="dataSourceAop" class="pers.zr.opensource.magic.dao.aop.MagicReadDataSourceAop"></bean>
+	<!--<bean id="dataSourceAop" class="pers.zr.opensource.magic.dao.aop.MagicReadDataSourceAop"></bean>
 	<aop:config>
 		<aop:aspect ref="dataSourceAop">
 			<aop:around method="determine"
 						pointcut="execution(* demo.pers.zr.magic.dao..*Service*.*(..))" />
 		</aop:aspect>
-	</aop:config>
+	</aop:config>-->
 
 </beans>

@@ -20,7 +20,7 @@ public class UpdateTest extends BaseJunit {
 
     @BeforeClass
     public static void generateDeleteBuilder() {
-        updateBuilder = new UpdateBuilder(table, shardStrategy);
+        updateBuilder = new UpdateBuilder(table);
         ActionBuilderContainer.setActionBuilder(updateBuilder);
     }
 

@@ -2,11 +2,11 @@ package pers.zr.opensource.magic.dao.shard;
 
 /**
  *
- * Shard Strategy
+ * TableShard Strategy
  *
  * Created by zhurong on 2016-4-28.
  */
-public class ShardStrategy {
+public class TableShardStrategy {
 
     private int shardCount;
 
@@ -14,7 +14,7 @@ public class ShardStrategy {
 
     private String separator;
 
-    public ShardStrategy(int shardCount, String shardColumn, String separator) {
+    public TableShardStrategy(int shardCount, String shardColumn, String separator) {
         this.shardCount = shardCount;
         this.shardColumn = shardColumn;
         this.separator = separator;

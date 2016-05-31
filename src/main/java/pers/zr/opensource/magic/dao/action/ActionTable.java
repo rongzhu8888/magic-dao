@@ -1,5 +1,12 @@
 package pers.zr.opensource.magic.dao.action;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import pers.zr.opensource.magic.dao.shard.TableShardHandler;
+import pers.zr.opensource.magic.dao.shard.TableShardStrategy;
+
+import java.util.List;
+
 /**
  * Created by zhurong on 2016-4-28.
  */
@@ -9,10 +16,13 @@ public class ActionTable {
     private String tableName;
 
     /** keys*/
-    private String[] keys;
+    private List<String> keys;
 
-    /** columns*/
-    private String[] columns;
+    private List<String> columns;
+
+    private TableShardStrategy tableShardStrategy;
+
+    private TableShardHandler tableShardHandler;
 
     public String getTableName() {
         return tableName;
@@ -22,20 +32,36 @@ public class ActionTable {
         this.tableName = tableName;
     }
 
-    public String[] getColumns() {
-        return columns;
-    }
-
-    public void setColumns(String[] columns) {
-        this.columns = columns;
-    }
-
-    public String[] getKeys() {
+    public List<String> getKeys() {
         return keys;
     }
 
-    public void setKeys(String[] keys) {
+    public void setKeys(List<String> keys) {
         this.keys = keys;
+    }
+
+    public List<String> getColumns() {
+        return columns;
+    }
+
+    public void setColumns(List<String> columns) {
+        this.columns = columns;
+    }
+
+    public TableShardStrategy getTableShardStrategy() {
+        return tableShardStrategy;
+    }
+
+    public void setTableShardStrategy(TableShardStrategy tableShardStrategy) {
+        this.tableShardStrategy = tableShardStrategy;
+    }
+
+    public TableShardHandler getTableShardHandler() {
+        return tableShardHandler;
+    }
+
+    public void setTableShardHandler(TableShardHandler tableShardHandler) {
+        this.tableShardHandler = tableShardHandler;
     }
 
     @Override
@@ -46,19 +72,23 @@ public class ActionTable {
 
         ActionTable that = (ActionTable) o;
 
-        return new org.apache.commons.lang3.builder.EqualsBuilder()
+        return new EqualsBuilder()
                 .append(tableName, that.tableName)
                 .append(keys, that.keys)
                 .append(columns, that.columns)
+                .append(tableShardStrategy, that.tableShardStrategy)
+                .append(tableShardHandler, that.tableShardHandler)
                 .isEquals();
     }
 
     @Override
     public int hashCode() {
-        return new org.apache.commons.lang3.builder.HashCodeBuilder(17, 37)
+        return new HashCodeBuilder(17, 37)
                 .append(tableName)
                 .append(keys)
                 .append(columns)
+                .append(tableShardStrategy)
+                .append(tableShardHandler)
                 .toHashCode();
     }
 }

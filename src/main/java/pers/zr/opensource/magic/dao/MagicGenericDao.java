@@ -11,7 +11,7 @@ import org.springframework.util.CollectionUtils;
 import pers.zr.opensource.magic.dao.action.*;
 import pers.zr.opensource.magic.dao.annotation.Column;
 import pers.zr.opensource.magic.dao.annotation.Key;
-import pers.zr.opensource.magic.dao.annotation.Shard;
+import pers.zr.opensource.magic.dao.annotation.TableShard;
 import pers.zr.opensource.magic.dao.annotation.Table;
 import pers.zr.opensource.magic.dao.constants.ActionMode;
 import pers.zr.opensource.magic.dao.mapper.GenericMapper;
@@ -21,7 +21,9 @@ import pers.zr.opensource.magic.dao.matcher.EqualsMatcher;
 import pers.zr.opensource.magic.dao.matcher.Matcher;
 import pers.zr.opensource.magic.dao.order.Order;
 import pers.zr.opensource.magic.dao.page.Page;
-import pers.zr.opensource.magic.dao.shard.ShardStrategy;
+import pers.zr.opensource.magic.dao.shard.DefaultTableShardHandler;
+import pers.zr.opensource.magic.dao.shard.TableShardHandler;
+import pers.zr.opensource.magic.dao.shard.TableShardStrategy;
 import pers.zr.opensource.magic.dao.utils.ClassUtil;
 
 import java.io.Serializable;
@@ -47,8 +49,16 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
 
     protected MagicDataSource magicDataSource;
 
+    protected TableShardHandler tableShardHandler = new DefaultTableShardHandler();
+
     public void setMagicDataSource(MagicDataSource magicDataSource) {
         this.magicDataSource = magicDataSource;
+    }
+
+    public void setTableShardHandler(TableShardHandler tableShardHandler) {
+        this.tableShardHandler = tableShardHandler;
+        table.setTableShardHandler(this.tableShardHandler);
+
     }
 
     /** entity class */
@@ -57,14 +67,8 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     /** key class */
     private Class<KEY> keyClass;
 
-    /** key columns of table */
-    private List<String> keyColumns;
-
     /** key fields of entity*/
     private List<Field> keyFields;
-
-    /** columns of table, match the annotated fields of entity*/
-    private List<String> tableColumns;
 
     /** columns of table to insert which matches the annotated fields of entity without auto increment field*/
     private List<String> toInsertColumns;
@@ -75,11 +79,8 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     /** table */
     private ActionTable table;
 
-    /** shard strategy */
-    private ShardStrategy shardStrategy;
-
     /** Generic RowMapper for set data */
-    protected RowMapper<ENTITY> rowMapper;
+    private RowMapper<ENTITY> rowMapper;
 
 
     @SuppressWarnings("unchecked")
@@ -113,9 +114,9 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         }
 
         //analysis @Key and @Column
-        keyColumns = new ArrayList<String>();
+        List<String> keyColumns = new ArrayList<String>();
         keyFields = new ArrayList<Field>();
-        tableColumns = new ArrayList<String>();
+        List<String> tableColumns = new ArrayList<String>();
         toInsertColumns= new ArrayList<String>();
 
         for(Field field : fields) {
@@ -163,8 +164,8 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         }
         table = new ActionTable();
         table.setTableName(tableAnnotation.name());
-        table.setKeys(keyColumns.toArray(new String[keyColumns.size()]));
-        table.setColumns(tableColumns.toArray(new String[tableColumns.size()]));
+        table.setKeys(keyColumns);
+        table.setColumns(tableColumns);
 
         //update columns which inside inserted columns but not key
         toUpdateColumns = new ArrayList<String>();
@@ -173,12 +174,13 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         rowMapper = new GenericMapper<ENTITY>(entityClass);
 
         //get shard strategy
-        Shard shardAnnotation = entityClass.getAnnotation(Shard.class);
-        if(null != shardAnnotation) {
-            int shardCount = shardAnnotation.shardCount();
-            String shardColumn = shardAnnotation.shardColumn();
-            String separator = shardAnnotation.separator();
-            shardStrategy = new ShardStrategy(shardCount, shardColumn, separator);
+        TableShard tableShardAnnotation = entityClass.getAnnotation(TableShard.class);
+        if(null != tableShardAnnotation) {
+            int shardCount = tableShardAnnotation.shardCount();
+            String shardColumn = tableShardAnnotation.shardColumn();
+            String separator = tableShardAnnotation.separator();
+            table.setTableShardStrategy(new TableShardStrategy(shardCount, shardColumn, separator));
+            table.setTableShardHandler(this.tableShardHandler);
         }
 
     }
@@ -187,8 +189,8 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     @Override
     public ENTITY get(KEY key) {
 
-        Query query = ActionBuilderFactory.getBuilder(ActionMode.QUERY, table, shardStrategy).build();
-        query.setQueryFields(tableColumns);
+        Query query = ActionBuilderFactory.getBuilder(ActionMode.QUERY, table).build();
+        query.setQueryFields(table.getColumns());
         query.addConditions(getKeyConditions(key));
 
         List<ENTITY> list = magicDataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
@@ -199,7 +201,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     @Override
     public void insert(ENTITY entity){
 
-        Insert insert = ActionBuilderFactory.getBuilder(ActionMode.INSERT, table, shardStrategy).build();
+        Insert insert = ActionBuilderFactory.getBuilder(ActionMode.INSERT, table).build();
         insert.setInsertFields(getDataMapByColumns(toInsertColumns, entity));
 
         magicDataSource.getJdbcTemplate(ActionMode.INSERT).update(insert.getSql(), insert.getParams());
@@ -209,7 +211,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     @Override
     public Long insertForId(ENTITY entity){
 
-        Insert insert = ActionBuilderFactory.getBuilder(ActionMode.INSERT, table, shardStrategy).build();
+        Insert insert = ActionBuilderFactory.getBuilder(ActionMode.INSERT, table).build();
         Map<String, Object> dataMap = getDataMapByColumns(toInsertColumns, entity);
         insert.setInsertFields(dataMap);
         String sql = insert.getSql();
@@ -245,7 +247,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     @Override
     public void update(ENTITY entity) {
 
-        Update update = ActionBuilderFactory.getBuilder(ActionMode.UPDATE, table, shardStrategy).build();
+        Update update = ActionBuilderFactory.getBuilder(ActionMode.UPDATE, table).build();
         update.addConditions(getKeyConditionsFromEntity(entity));
         update.setUpdateFields(getDataMapByColumns(toUpdateColumns, entity));
 
@@ -258,7 +260,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     @Override
     public void delete(KEY key){
 
-        Delete delete = ActionBuilderFactory.getBuilder(ActionMode.DELETE, table, shardStrategy).build();
+        Delete delete = ActionBuilderFactory.getBuilder(ActionMode.DELETE, table).build();
         delete.addConditions(getKeyConditions(key));
 
         magicDataSource.getJdbcTemplate(ActionMode.DELETE).update(delete.getSql(), delete.getParams());
@@ -268,7 +270,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     @Override
     public void delete(Matcher...conditions) {
 
-        Delete delete = ActionBuilderFactory.getBuilder(ActionMode.DELETE, table, shardStrategy).build();
+        Delete delete = ActionBuilderFactory.getBuilder(ActionMode.DELETE, table).build();
         if(null != conditions && conditions.length >0) {
             delete.addConditions(Arrays.asList(conditions));
         }
@@ -279,7 +281,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     @Override
     public void update(Map<String, Object> valueMap, Matcher...conditions) {
 
-        Update update = ActionBuilderFactory.getBuilder(ActionMode.UPDATE, table, shardStrategy).build();
+        Update update = ActionBuilderFactory.getBuilder(ActionMode.UPDATE, table).build();
         if(null != conditions && conditions.length >0) {
             update.addConditions(Arrays.asList(conditions));
         }
@@ -290,8 +292,8 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
 
     @Override
     public List<ENTITY> query(Matcher...conditions) {
-        Query query = ActionBuilderFactory.getBuilder(ActionMode.QUERY, table, shardStrategy).build();
-        query.setQueryFields(tableColumns);
+        Query query = ActionBuilderFactory.getBuilder(ActionMode.QUERY, table).build();
+        query.setQueryFields(table.getColumns());
         query.addConditions(Arrays.asList(conditions));
         List<ENTITY> list = magicDataSource.getJdbcTemplate(ActionMode.QUERY).query(query.getSql(), query.getParams(), rowMapper);
         return CollectionUtils.isEmpty(list) ? new ArrayList<ENTITY>() : list;
@@ -313,8 +315,8 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
 
     @Override
     public List<ENTITY> query(Page page, List<Order> orders, Matcher...conditions){
-        Query query = ActionBuilderFactory.getBuilder(ActionMode.QUERY, table, shardStrategy).build();
-        query.setQueryFields(tableColumns);
+        Query query = ActionBuilderFactory.getBuilder(ActionMode.QUERY, table).build();
+        query.setQueryFields(table.getColumns());
         query.addConditions(Arrays.asList(conditions));
         query.setOrders(orders);
         query.setPage(page);
@@ -324,7 +326,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
 
     @Override
     public Long getCount(Matcher...conditions) {
-        Query query = ActionBuilderFactory.getBuilder(ActionMode.QUERY, table, shardStrategy).build();
+        Query query = ActionBuilderFactory.getBuilder(ActionMode.QUERY, table).build();
         query.setQueryFields(Collections.singletonList("COUNT(1)"));
         query.addConditions(Arrays.asList(conditions));
 
@@ -334,12 +336,13 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     private List<Matcher> getKeyConditions(KEY key) {
         List<Matcher> matcherList = new ArrayList<Matcher>();
 
-        if(CollectionUtils.isEmpty(keyColumns)) {
+        List<String> keyColumns = table.getKeys();
+        if(CollectionUtils.isEmpty(table.getKeys())) {
             throw new RuntimeException("no key columns found!");
         }
 
-        if(keyColumns.size() == 1 && ClassUtil.isBasicType(keyClass)) {
-            matcherList.add(new EqualsMatcher(table.getKeys()[0], key));
+        if(table.getKeys().size() == 1 && ClassUtil.isBasicType(keyClass)) {
+            matcherList.add(new EqualsMatcher(keyColumns.get(0), key));
         }else {
             for(int i=0; i<keyFields.size(); i++) {
 
@@ -364,6 +367,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
     private List<Matcher> getKeyConditionsFromEntity(ENTITY entity) {
         List<Matcher> matcherList = new ArrayList<Matcher>();
 
+        List<String> keyColumns = table.getKeys();
         if(CollectionUtils.isEmpty(keyColumns)) {
             throw new RuntimeException("no key columns found!");
         }
@@ -415,5 +419,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         return dataMap;
     }
 
-
+    public RowMapper<ENTITY> getRowMapper() {
+        return rowMapper;
+    }
 }

@@ -20,7 +20,7 @@ public class InsertTest extends BaseJunit {
 
     @BeforeClass
     public static void generateBuidler() {
-        insertBuilder = new InsertBuilder(table, shardStrategy);
+        insertBuilder = new InsertBuilder(table);
         ActionBuilderContainer.setActionBuilder(insertBuilder);
     }
 

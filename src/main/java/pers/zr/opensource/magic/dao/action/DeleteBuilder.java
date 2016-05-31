@@ -1,7 +1,8 @@
 package pers.zr.opensource.magic.dao.action;
 
 import pers.zr.opensource.magic.dao.constants.ActionMode;
-import pers.zr.opensource.magic.dao.shard.ShardStrategy;
+import pers.zr.opensource.magic.dao.shard.TableShardHandler;
+import pers.zr.opensource.magic.dao.shard.TableShardStrategy;
 
 /**
  *
@@ -13,17 +14,13 @@ public class DeleteBuilder extends ActionBuilder {
         this.table = table;
     }
 
-    public DeleteBuilder(ActionTable table, ShardStrategy strategy) {
-        this.table = table;
-        this.shardStrategy = strategy;
-    }
 
     @Override
     public Delete build() {
         Delete delete = new Delete();
         delete.table = this.table;
-        delete.shardStrategy = this.shardStrategy;
         return delete;
+
     }
 
     @Override

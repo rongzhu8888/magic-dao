@@ -16,7 +16,7 @@ public class AppService {
     private MagicAppDao appDao;
 
     public List<AppEntity> queryApps() {
-        Matcher matcher = new LeftLikeMatcher("app_name", "二维码_");
+        Matcher matcher = new LeftLikeMatcher("app_id", "hdb-core");
         List<AppEntity> appEntityList = appDao.query(matcher);
         return appEntityList;
     }

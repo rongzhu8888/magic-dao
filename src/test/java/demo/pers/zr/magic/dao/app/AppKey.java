@@ -9,14 +9,14 @@ import java.io.Serializable;
  */
 public class AppKey implements Serializable {
 
-    @Key(column = "app_id", autoIncrement = true)
-    private Long appId;
+    @Key(column = "app_id")
+    private String appId;
 
-    public Long getAppId() {
+    public String getAppId() {
         return appId;
     }
 
-    public void setAppId(Long appId) {
+    public void setAppId(String appId) {
         this.appId = appId;
     }
 }

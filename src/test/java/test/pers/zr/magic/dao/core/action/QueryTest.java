@@ -16,8 +16,8 @@ public class QueryTest extends BaseJunit {
     private static QueryBuilder queryBuilder;
 
     @BeforeClass
-    public static void generateBuidler() {
-        queryBuilder = new QueryBuilder(table, shardStrategy);
+    public static void generateBuilder() {
+        queryBuilder = new QueryBuilder(table);
         ActionBuilderContainer.setActionBuilder(queryBuilder);
     }
 

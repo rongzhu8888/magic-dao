@@ -3,8 +3,13 @@ package test.pers.zr.magic.dao.core;
 import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.junit.BeforeClass;
 import pers.zr.opensource.magic.dao.MagicSingleDataSource;
-import pers.zr.opensource.magic.dao.shard.ShardStrategy;
+import pers.zr.opensource.magic.dao.shard.DefaultTableShardHandler;
+import pers.zr.opensource.magic.dao.shard.TableShardStrategy;
 import pers.zr.opensource.magic.dao.action.ActionTable;
+import test.pers.zr.magic.dao.core.action.MyTableShardHandler;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by zhurong on 2016/4/30.
@@ -14,9 +19,7 @@ public class BaseJunit {
     protected static MagicSingleDataSource dataSource = new MagicSingleDataSource();
 
     protected static ActionTable table ;
-    protected static ShardStrategy shardStrategy ;
 
-//    protected static DeleteBuilder deleteBuilder;
 
 
     @BeforeClass
@@ -45,11 +48,12 @@ public class BaseJunit {
 
         table = new ActionTable();
         table.setTableName("tab_order");
-        table.setKeys(new String[]{"order_id"});
-        table.setColumns(new String[]{"order_id", "user_id","create_time", "update_time", "order_status"});
+        List<String> keyList = new ArrayList<String>();
+        keyList.add("order_id");
+        table.setKeys(keyList);
 
-        shardStrategy = new ShardStrategy(32, "user_id", "_");
-
+        table.setTableShardHandler(new MyTableShardHandler());
+        table.setTableShardStrategy(new TableShardStrategy(32, "user_id", "_"));
 
     }
 }

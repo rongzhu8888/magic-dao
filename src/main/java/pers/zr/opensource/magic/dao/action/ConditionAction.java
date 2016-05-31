@@ -4,7 +4,8 @@ import org.springframework.util.CollectionUtils;
 import pers.zr.opensource.magic.dao.constants.ConditionType;
 import pers.zr.opensource.magic.dao.constants.MatchType;
 import pers.zr.opensource.magic.dao.matcher.Matcher;
-import pers.zr.opensource.magic.dao.utils.ShardUtil;
+import pers.zr.opensource.magic.dao.shard.TableShardHandler;
+import pers.zr.opensource.magic.dao.shard.TableShardStrategy;
 
 import java.util.*;
 
@@ -61,6 +62,9 @@ public abstract class ConditionAction extends Action {
             conditionSqlBuilder.append("WHERE ");
             List<Object> conParamsList = new ArrayList<Object>(conditions.size());
 
+            TableShardStrategy tableShardStrategy = table.getTableShardStrategy();
+            TableShardHandler tableShardHandler = table.getTableShardHandler();
+
             for(Matcher matcher : conditions) {
                 conditionSqlBuilder.append(ConditionType.AND).append(" ")
                         .append(matcher.getColumn()).append(" ")
@@ -79,21 +83,25 @@ public abstract class ConditionAction extends Action {
                     conditionSqlBuilder.append(" ").append(inConBuilder);
                 }
 
-
                 getMatcherParam(conParamsList, matcher);
 
                 //get actual table name when shard exist
-                if(null != shardStrategy
-                        && matcher.getColumn().equalsIgnoreCase(shardStrategy.getShardColumn())) {
-                    this.shardTableName = ShardUtil.getShardTableName(table.getTableName(),
-                            shardStrategy.getSeparator(),
-                            shardStrategy.getShardCount(),
-                            String.valueOf(String.valueOf(matcher.getValues()[0])));
+                if(null == shardTableName) {
+                    if(null != tableShardHandler && null != tableShardStrategy) {
+                        String shardColumn = tableShardStrategy.getShardColumn();
+                        if(matcher.getColumn().equalsIgnoreCase(shardColumn)) {
+                            shardTableName = tableShardHandler.getShardTableName(
+                                    table.getTableName(),
+                                    tableShardStrategy.getShardCount(),
+                                    tableShardStrategy.getSeparator(),
+                                    matcher.getValues()[0]);
+                        }
+                    }
                 }
             }
 
-            if(shardStrategy != null && this.shardTableName == null) {
-                throw new RuntimeException("Shard error: can not find shard column from condition data!");
+            if(tableShardStrategy != null && this.shardTableName == null) {
+                throw new RuntimeException("Failed to get actual name of shard table!");
             }
 
             this.conSql = conditionSqlBuilder.toString().replace("WHERE AND", "WHERE");

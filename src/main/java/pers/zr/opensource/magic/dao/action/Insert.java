@@ -2,7 +2,8 @@ package pers.zr.opensource.magic.dao.action;
 
 import org.springframework.util.CollectionUtils;
 import pers.zr.opensource.magic.dao.constants.ActionMode;
-import pers.zr.opensource.magic.dao.utils.ShardUtil;
+import pers.zr.opensource.magic.dao.shard.TableShardHandler;
+import pers.zr.opensource.magic.dao.shard.TableShardStrategy;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,21 +58,31 @@ public class Insert extends Action {
         List<Object> paramsList = new ArrayList<Object>(insertFields.size());
         StringBuilder sqlBuilder = new StringBuilder(" (");
 
+        TableShardStrategy tableShardStrategy = table.getTableShardStrategy();
+        TableShardHandler tableShardHandler = table.getTableShardHandler();
 
         for(String column : insertFields.keySet()) {
             sqlBuilder.append(column).append(",");
             Object value = insertFields.get(column);
             paramsList.add(value);
-            if(this.shardStrategy != null && shardStrategy.getShardColumn().equalsIgnoreCase(column)) {
-                this.shardTableName = ShardUtil.getShardTableName(table.getTableName(),
-                        shardStrategy.getSeparator(),
-                        shardStrategy.getShardCount(),
-                        String.valueOf(value));
+
+            if(null == shardTableName) {
+                if(null != tableShardHandler && null != tableShardStrategy) {
+                    String shardColumn = tableShardStrategy.getShardColumn();
+                    if(column.equalsIgnoreCase(shardColumn)) {
+                        shardTableName = tableShardHandler.getShardTableName(
+                                table.getTableName(),
+                                tableShardStrategy.getShardCount(),
+                                tableShardStrategy.getSeparator(),
+                                value);
+                    }
+                }
             }
+
         }
 
-        if(shardStrategy != null && this.shardTableName == null) {
-            throw new RuntimeException("Shard error: can not find shard column from insert data!");
+        if(tableShardStrategy != null && this.shardTableName == null) {
+            throw new RuntimeException("Failed to get actual name of shard table!");
         }
 
         sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(",")).append(") VALUES (");
@@ -80,11 +91,15 @@ public class Insert extends Action {
         }
         sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(",")).append(")");
 
-        String tableName = this.table.getTableName();
-        if(null != this.shardStrategy) {
-            tableName = this.shardTableName;
+        String actualTableName;
+        if(null != table.getTableShardStrategy()) {
+            actualTableName = this.shardTableName;
+        }else {
+            actualTableName = this.table.getTableName();
         }
-        this.sql = "INSERT INTO " + tableName + sqlBuilder.toString();
+
+
+        this.sql = "INSERT INTO " + actualTableName + sqlBuilder.toString();
         this.params = paramsList.toArray();
 
 

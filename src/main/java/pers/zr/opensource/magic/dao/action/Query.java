@@ -45,13 +45,15 @@ public class Query extends ConditionAction {
                 targetFieldsStr = "*";
             }
 
-            String tableName = this.table.getTableName();
-            if(null != this.shardStrategy) {
-                tableName = getShardTableName();
+            String actualTableName;
+            if(null != table.getTableShardStrategy()) {
+                actualTableName = getShardTableName();
+            }else {
+                actualTableName = this.table.getTableName();
             }
 
             sqlBuilder.append("SELECT ").append(targetFieldsStr).append(" FROM ")
-                    .append(tableName).append(" ").append(getConSql());
+                    .append(actualTableName).append(" ").append(getConSql());
 
             //sort
             if(null != orders && orders.size() > 0) {
