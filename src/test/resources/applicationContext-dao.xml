@@ -105,7 +105,7 @@
 	<!-- 事务注解驱动，标注@Transactional的类和方法将具有事务性 -->
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
-	<bean id="dataSourceAop" class="pers.zr.opensource.magic.dao.aop.ReadingDataSourceAop"></bean>
+	<bean id="dataSourceAop" class="pers.zr.opensource.magic.dao.aop.MagicReadDataSourceAop"></bean>
 	<aop:config>
 		<aop:aspect ref="dataSourceAop">
 			<aop:around method="determine"

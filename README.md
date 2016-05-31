@@ -316,7 +316,7 @@ MagicSingleDataSource和MagicMultiDataSource都实现了接口MagicDataSource
 
 - AOP配置
 
-		<bean id="dataSourceAop" class="ReadingDataSourceAop"></bean>
+		<bean id="dataSourceAop" class="pers.zr.opensource.magic.dao.aop.MagicReadDataSourceAop"></bean>
 		<aop:config>
 			<aop:aspect ref="dataSourceAop">
 				<aop:around method="determine"

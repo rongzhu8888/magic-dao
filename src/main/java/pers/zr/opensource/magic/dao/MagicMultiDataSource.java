@@ -23,7 +23,7 @@ public class MagicMultiDataSource implements MagicDataSource {
 
     private Log log = LogFactory.getLog(MagicMultiDataSource.class);
 
-    public static ThreadLocal<DataSourceType> runtimeReadingDataSourceType = new ThreadLocal<DataSourceType>();
+    public static ThreadLocal<DataSourceType> currentThreadReadDataSourceType = new ThreadLocal<DataSourceType>();
 
     private DataSource master;
 
@@ -47,7 +47,7 @@ public class MagicMultiDataSource implements MagicDataSource {
             isNowMasterDataSource = true;
 
         } else if(ActionMode.QUERY == actionMode){
-            if(DataSourceType.MASTER == runtimeReadingDataSourceType.get()) {
+            if(DataSourceType.MASTER == currentThreadReadDataSourceType.get()) {
                 //force to read from master
                 isNowMasterDataSource = true;
             }else {
@@ -102,7 +102,7 @@ public class MagicMultiDataSource implements MagicDataSource {
         if(ActionMode.INSERT == actionMode || ActionMode.UPDATE == actionMode || ActionMode.DELETE == actionMode) {
             dataSource = master;
         }else if(ActionMode.QUERY == actionMode) {
-            if(DataSourceType.MASTER == runtimeReadingDataSourceType.get()) {
+            if(DataSourceType.MASTER == currentThreadReadDataSourceType.get()) {
                 dataSource = master;
             }else {
                 int randomSlaveIndex = new Random().nextInt(slaves.size());

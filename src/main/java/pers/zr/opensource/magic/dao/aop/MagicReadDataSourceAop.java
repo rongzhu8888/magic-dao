@@ -15,9 +15,9 @@ import java.lang.reflect.Method;
  * Aop to analysis @DataSource annotation, and determine the reading dataSource type: master or slave
  * Created by zhurong on 2016-5-23.
  */
-public class ReadingDataSourceAop {
+public class MagicReadDataSourceAop {
 
-    private Log log = LogFactory.getLog(ReadingDataSourceAop.class);
+    private Log log = LogFactory.getLog(MagicReadDataSourceAop.class);
 
     public Object determine(ProceedingJoinPoint pjp) {
         try {
@@ -31,7 +31,7 @@ public class ReadingDataSourceAop {
             }
             DataSourceType currentType = (null != dataSourceAnnotation) ? dataSourceAnnotation.type() : DataSourceType.SLAVE;
             //set current thread reading dataSource type
-            MagicMultiDataSource.runtimeReadingDataSourceType.set(currentType);
+            MagicMultiDataSource.currentThreadReadDataSourceType.set(currentType);
             if(log.isDebugEnabled()) {
                 log.debug("invoke service=" + clazz.getName() + "." + method.getName() + ", readingDataSource=" +  currentType);
             }
@@ -40,7 +40,7 @@ public class ReadingDataSourceAop {
             throw new RuntimeException(t);
         } finally {
             //remove current thread reading dataSource type
-            MagicMultiDataSource.runtimeReadingDataSourceType.remove();
+            MagicMultiDataSource.currentThreadReadDataSourceType.remove();
 
         }
     }
