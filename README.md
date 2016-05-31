@@ -320,7 +320,7 @@ MagicSingleDataSource和MagicMultiDataSource都实现了接口MagicDataSource
 		<aop:config>
 			<aop:aspect ref="dataSourceAop">
 				<aop:around method="determine"
-							pointcut="execution(* demo.pers.zr.magic.dao..*ServiceImpl*.*(..))" />
+							pointcut="execution(* demo.xxx..*ServiceImpl*.*(..))" />
 			</aop:aspect>
 		</aop:config>
 
