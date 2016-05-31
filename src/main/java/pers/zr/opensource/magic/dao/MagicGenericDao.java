@@ -33,6 +33,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -167,11 +168,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
 
         //update columns which inside inserted columns but not key
         toUpdateColumns = new ArrayList<String>();
-        for(String column : toInsertColumns) {
-            if(!keyColumns.contains(column)) {
-                toUpdateColumns.add(column);
-            }
-        }
+        toUpdateColumns.addAll(toInsertColumns.stream().filter(column -> !keyColumns.contains(column)).collect(Collectors.toList()));
 
         rowMapper = new GenericMapper<ENTITY>(entityClass);
 
@@ -232,8 +229,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
                 new PreparedStatementCreator() {
                     @Override
                     public PreparedStatement createPreparedStatement(Connection connection) throws SQLException {
-                        PreparedStatement ps = jdbcTemplate.getDataSource().getConnection()
-                                .prepareStatement(sql, columnsArray);
+                        PreparedStatement ps = connection.prepareStatement(sql, columnsArray);
                         for(int k=1; k<=paramsArray.length; k++) {
                             ps.setObject(k, paramsArray[k-1]);
                         }
@@ -402,7 +398,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
 
             Method getMethod = MapperContextHolder.getMethod(entityClass, field, MethodType.GET);
             if(getMethod == null) {
-                throw new RuntimeException("field [" + field.getName() + "] has no get method!");
+                throw new RuntimeException("field [" + field.getName() + "] has no getMethod!");
             }
             try {
                 value = getMethod.invoke(entity);

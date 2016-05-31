@@ -68,8 +68,6 @@ public class Query extends ConditionAction {
 
             //paging
             if(null != page) {
-                int limit = page.getPageSize();
-                int offset = (page.getPageNo() - 1) * limit;
                 sqlBuilder.append("LIMIT ? OFFSET ? ");
             }
 
