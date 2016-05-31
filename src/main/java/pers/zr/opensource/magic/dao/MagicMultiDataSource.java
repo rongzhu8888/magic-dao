@@ -48,7 +48,7 @@ public class MagicMultiDataSource implements MagicDataSource {
 
         } else if(ActionMode.QUERY == actionMode){
             if(DataSourceType.MASTER == runtimeReadingDataSourceType.get()) {
-                //force to read from slave
+                //force to read from master
                 isNowMasterDataSource = true;
             }else {
                 isNowMasterDataSource = false;
