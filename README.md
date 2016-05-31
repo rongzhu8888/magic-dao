@@ -19,7 +19,7 @@
 	<dependency>
 		<groupId>com.github.rongzhu8888</groupId>
     	<artifactId>magic-dao</artifactId>
-    	<version>1.0.0</version>
+    	<version>1.0.1</version>
 	</dependency>
 
 
@@ -330,4 +330,4 @@ MagicSingleDataSource和MagicMultiDataSource都实现了接口MagicDataSource
 
 
  1. 完成设计说明
- 2. 实现v1.0.1：支持分库机制
+ 2. 支持分库机制
