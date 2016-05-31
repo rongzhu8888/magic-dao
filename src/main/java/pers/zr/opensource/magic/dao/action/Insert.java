@@ -1,7 +1,5 @@
 package pers.zr.opensource.magic.dao.action;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.util.CollectionUtils;
 import pers.zr.opensource.magic.dao.constants.ActionMode;
 import pers.zr.opensource.magic.dao.utils.ShardUtil;
@@ -14,8 +12,6 @@ import java.util.Map;
  * Created by zhurong on 2016-4-28.
  */
 public class Insert extends Action {
-
-    private static Logger log = LogManager.getLogger(Insert.class);
 
     private Map<String, Object> insertFields;
 

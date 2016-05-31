@@ -1,7 +1,7 @@
 package pers.zr.opensource.magic.dao;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.CollectionUtils;
 import pers.zr.opensource.magic.dao.constants.ActionMode;
@@ -21,7 +21,7 @@ import java.util.Random;
  */
 public class MagicMultiDataSource implements MagicDataSource {
 
-    private Logger log = LogManager.getLogger(MagicMultiDataSource.class);
+    private Log log = LogFactory.getLog(MagicMultiDataSource.class);
 
     public static ThreadLocal<DataSourceType> runtimeReadingDataSourceType = new ThreadLocal<DataSourceType>();
 

@@ -1,7 +1,7 @@
 package pers.zr.opensource.magic.dao;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.PreparedStatementCreator;
 import org.springframework.jdbc.core.RowMapper;
@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
  */
 public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends Serializable> implements MagicDao<KEY, ENTITY> {
 
-    protected final Logger log = LogManager.getLogger(getClass());
+    protected final Log log = LogFactory.getLog(getClass());
 
     protected MagicDataSource magicDataSource;
 

@@ -1,7 +1,7 @@
 package pers.zr.opensource.magic.dao;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import pers.zr.opensource.magic.dao.constants.ActionMode;
 
@@ -15,7 +15,7 @@ import javax.sql.DataSource;
  */
 public class MagicSingleDataSource implements MagicDataSource {
 
-    private static final Logger log = LogManager.getLogger(MagicSingleDataSource.class);
+    private Log log = LogFactory.getLog(MagicSingleDataSource.class);
 
     private DataSource dataSource;
 

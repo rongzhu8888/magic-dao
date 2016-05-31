@@ -1,7 +1,5 @@
 package pers.zr.opensource.magic.dao.action;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import pers.zr.opensource.magic.dao.constants.ActionMode;
 import pers.zr.opensource.magic.dao.order.Order;
 import pers.zr.opensource.magic.dao.page.Page;
@@ -12,8 +10,6 @@ import java.util.List;
  * Created by zhurong on 2016-4-28.
  */
 public class Query extends ConditionAction {
-
-    private Logger log = LogManager.getLogger(Query.class);
 
     private List<String> queryFields;
 

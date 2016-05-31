@@ -1,15 +1,11 @@
 package pers.zr.opensource.magic.dao.action;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import pers.zr.opensource.magic.dao.constants.ActionMode;
 
 /**
  * Created by zhurong on 2016-4-28.
  */
 public class Delete extends ConditionAction {
-
-    private Logger log = LogManager.getLogger(Delete.class);
 
     @Override
     public String getSql() {

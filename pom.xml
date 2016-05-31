@@ -6,7 +6,7 @@
 
     <groupId>com.github.rongzhu8888</groupId>
     <artifactId>magic-dao</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>jar</packaging>
 
     <name>magic-dao</name>
@@ -55,11 +55,11 @@
             <version>${junit_version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
+       <!-- <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>${log4j_version}</version>
-        </dependency>
+        </dependency>-->
 
         <!-- spring framework -->
         <dependency>

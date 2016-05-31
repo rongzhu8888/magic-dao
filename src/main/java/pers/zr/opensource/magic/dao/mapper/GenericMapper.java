@@ -1,7 +1,7 @@
 package pers.zr.opensource.magic.dao.mapper;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.RowMapper;
 import pers.zr.opensource.magic.dao.constants.MethodType;
 
@@ -18,7 +18,7 @@ import java.util.*;
  */
 public class GenericMapper<ENTITY extends Serializable> implements RowMapper<ENTITY> {
 
-    private static Logger log = LogManager.getLogger(GenericMapper.class);
+    private static Log log = LogFactory.getLog(GenericMapper.class);
 
     private Class<ENTITY> entityClass;
 

@@ -1,7 +1,7 @@
 package pers.zr.opensource.magic.dao.aop;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import pers.zr.opensource.magic.dao.MagicMultiDataSource;
@@ -17,7 +17,7 @@ import java.lang.reflect.Method;
  */
 public class ReadingDataSourceAop {
 
-    private Logger log = LogManager.getLogger(ReadingDataSourceAop.class);
+    private Log log = LogFactory.getLog(ReadingDataSourceAop.class);
 
     public Object determine(ProceedingJoinPoint pjp) {
         try {
