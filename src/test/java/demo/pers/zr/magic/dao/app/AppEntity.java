@@ -11,7 +11,7 @@ import java.util.Date;
  * Created by zhurong on 2016-5-6.
  */
 @Table(name = "mc_app")
-@TableShard(shardColumn = "app_id", shardCount = 32, separator = "_")
+//@TableShard(shardColumn = "app_id", shardCount = 32, separator = "_")
 public class AppEntity extends AppKey implements Serializable {
 
     @Column(value = "app_name")

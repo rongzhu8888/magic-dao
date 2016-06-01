@@ -21,6 +21,7 @@ public class AppService {
         return appEntityList;
     }
 
+
     public void setAppDao(MagicAppDao appDao) {
         this.appDao = appDao;
     }

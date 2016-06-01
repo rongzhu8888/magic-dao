@@ -20,6 +20,10 @@ public class ActionTable {
 
     private List<String> columns;
 
+    private List<String> defaultInsertColumns;
+
+    private List<String> defaultUpdateColumns;
+
     private TableShardStrategy tableShardStrategy;
 
     private TableShardHandler tableShardHandler;
@@ -64,6 +68,22 @@ public class ActionTable {
         this.tableShardHandler = tableShardHandler;
     }
 
+    public List<String> getDefaultInsertColumns() {
+        return defaultInsertColumns;
+    }
+
+    public void setDefaultInsertColumns(List<String> defaultInsertColumns) {
+        this.defaultInsertColumns = defaultInsertColumns;
+    }
+
+    public List<String> getDefaultUpdateColumns() {
+        return defaultUpdateColumns;
+    }
+
+    public void setDefaultUpdateColumns(List<String> defaultUpdateColumns) {
+        this.defaultUpdateColumns = defaultUpdateColumns;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -77,7 +97,6 @@ public class ActionTable {
                 .append(keys, that.keys)
                 .append(columns, that.columns)
                 .append(tableShardStrategy, that.tableShardStrategy)
-                .append(tableShardHandler, that.tableShardHandler)
                 .isEquals();
     }
 
@@ -88,7 +107,6 @@ public class ActionTable {
                 .append(keys)
                 .append(columns)
                 .append(tableShardStrategy)
-                .append(tableShardHandler)
                 .toHashCode();
     }
 }
