@@ -146,7 +146,7 @@
 
 我们将从以下四种情况说明如何配置PO对象与Table的映射关系：
 
-- 普通唯一主键
+- **普通唯一主键**
 
 		@Table(name = "mc_app")
 		public class AppPo implements Serializable {
@@ -172,7 +172,7 @@
 		    ... <省略getXxx和setXxx方法>
 		}
 
-- 自增唯一主键
+- **自增唯一主键** 
 
 		@Table(name = "mc_app")
 		public class AppPo implements Serializable {
@@ -199,7 +199,7 @@
 		}
 
 
-- 联合主键
+- **联合主键** 
 
 		//主键对象
 		public class UserRoleKey implements Serializable {
@@ -229,13 +229,13 @@
 
 
 
-- 分表
+- **分表**
 
 	实现数据分表访问非常简单，只需通过**@TableShard** 注解配置分表策略即可。
 
-		@Table(name = "mc_orders")
-		@TableShard(shardCount = 32, shardColumn = "user_id", separator = "_")
+		@TableShard(shardTable = "mc_orders", shardCount = 32, shardColumn = "user_id", separator = "_")
 		public class OrderPo implements Serializable {
+
 			@Key(column = "order_id")
 			private Long orderId;
 
