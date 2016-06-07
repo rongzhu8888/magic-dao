@@ -20,7 +20,7 @@ public class Insert extends Action {
         this.insertFields = insertFields;
     }
 
-    private String shardTableName = null;
+    private String actualTableName = null;
 
     @Override
     public String getSql() {
@@ -66,22 +66,18 @@ public class Insert extends Action {
             Object value = insertFields.get(column);
             paramsList.add(value);
 
-            if(null == shardTableName) {
+            if(null == actualTableName) {
                 if(null != tableShardHandler && null != tableShardStrategy) {
                     String shardColumn = tableShardStrategy.getShardColumn();
                     if(column.equalsIgnoreCase(shardColumn)) {
-                        shardTableName = tableShardHandler.getShardTableName(
-                                table.getTableName(),
-                                tableShardStrategy.getShardCount(),
-                                tableShardStrategy.getSeparator(),
-                                value);
+                        actualTableName = tableShardHandler.getActualTableName(tableShardStrategy, value);
                     }
                 }
             }
 
         }
 
-        if(tableShardStrategy != null && this.shardTableName == null) {
+        if(tableShardStrategy != null && this.actualTableName == null) {
             throw new RuntimeException("Failed to get actual name of shard table!");
         }
 
@@ -91,15 +87,15 @@ public class Insert extends Action {
         }
         sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(",")).append(")");
 
-        String actualTableName;
+        String targetTableName;
         if(null != table.getTableShardStrategy()) {
-            actualTableName = this.shardTableName;
+            targetTableName = this.actualTableName;
         }else {
-            actualTableName = this.table.getTableName();
+            targetTableName = this.table.getTableName();
         }
 
 
-        this.sql = "INSERT INTO " + actualTableName + sqlBuilder.toString();
+        this.sql = "INSERT INTO " + targetTableName + sqlBuilder.toString();
         this.params = paramsList.toArray();
 
 

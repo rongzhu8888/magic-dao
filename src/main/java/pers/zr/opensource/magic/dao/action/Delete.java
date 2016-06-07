@@ -11,14 +11,14 @@ public class Delete extends ConditionAction {
     public String getSql() {
         if(null == this.sql) {
 
-            String actualTableName;
+            String targetTableName;
             if(null != table.getTableShardStrategy()) {
-                actualTableName = getShardTableName();
+                targetTableName = getActualTableName();
             }else {
-                actualTableName = this.table.getTableName();
+                targetTableName = this.table.getTableName();
             }
 
-            this.sql = (new StringBuilder()).append("DELETE FROM ").append(actualTableName)
+            this.sql = (new StringBuilder()).append("DELETE FROM ").append(targetTableName)
                     .append(" ").append(getConSql()).toString();
 
         }

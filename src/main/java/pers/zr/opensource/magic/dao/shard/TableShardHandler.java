@@ -5,7 +5,7 @@ package pers.zr.opensource.magic.dao.shard;
  */
 public interface TableShardHandler {
 
-    public String getShardTableName(String tableBasicName,int shardCount, String separator, Object columnValue);
+    public String getActualTableName(TableShardStrategy shardStrategy, Object columnValue);
 
 
 }

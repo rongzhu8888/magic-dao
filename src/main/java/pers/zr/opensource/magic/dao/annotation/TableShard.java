@@ -11,9 +11,11 @@ import java.lang.annotation.*;
 @Documented
 public @interface TableShard {
 
-    int shardCount();
+    String shardTable();
 
     String shardColumn();
 
     String separator() default "";
+
+    int shardCount();
 }

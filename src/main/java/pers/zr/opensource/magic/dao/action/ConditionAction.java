@@ -18,7 +18,7 @@ public abstract class ConditionAction extends Action {
 
     private String conSql = null;
     private List<Object> conParams = null;
-    private String shardTableName = null;
+    private String actualTableName = null;
 
     public <T extends ConditionAction>T addConditions(Collection<Matcher> matcheres) {
         conditions.addAll(matcheres);
@@ -44,11 +44,11 @@ public abstract class ConditionAction extends Action {
         return this.conSql != null ? this.conSql : "";
     }
 
-    protected String getShardTableName() {
-        if(null == shardTableName) {
+    protected String getActualTableName() {
+        if(null == actualTableName) {
             analysisConditions();
         }
-        return this.shardTableName;
+        return this.actualTableName;
     }
 
 
@@ -86,21 +86,17 @@ public abstract class ConditionAction extends Action {
                 getMatcherParam(conParamsList, matcher);
 
                 //get actual table name when shard exist
-                if(null == shardTableName) {
+                if(null == actualTableName) {
                     if(null != tableShardHandler && null != tableShardStrategy) {
                         String shardColumn = tableShardStrategy.getShardColumn();
                         if(matcher.getColumn().equalsIgnoreCase(shardColumn)) {
-                            shardTableName = tableShardHandler.getShardTableName(
-                                    table.getTableName(),
-                                    tableShardStrategy.getShardCount(),
-                                    tableShardStrategy.getSeparator(),
-                                    matcher.getValues()[0]);
+                            actualTableName = tableShardHandler.getActualTableName(tableShardStrategy, matcher.getValues()[0]);
                         }
                     }
                 }
             }
 
-            if(tableShardStrategy != null && this.shardTableName == null) {
+            if(tableShardStrategy != null && this.actualTableName == null) {
                 throw new RuntimeException("Failed to get actual name of shard table!");
             }
 

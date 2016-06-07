@@ -8,16 +8,23 @@ package pers.zr.opensource.magic.dao.shard;
  */
 public class TableShardStrategy {
 
+    private String shardTable;
+
     private int shardCount;
 
     private String shardColumn;
 
     private String separator;
 
-    public TableShardStrategy(int shardCount, String shardColumn, String separator) {
+    public TableShardStrategy(String shardTable, int shardCount, String shardColumn, String separator) {
+        this.shardTable = shardTable;
         this.shardCount = shardCount;
         this.shardColumn = shardColumn;
         this.separator = separator;
+    }
+
+    public String getShardTable() {
+        return shardTable;
     }
 
     public int getShardCount() {

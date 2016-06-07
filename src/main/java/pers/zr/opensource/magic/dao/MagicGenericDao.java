@@ -78,10 +78,21 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         keyClass = (Class<KEY>)types[0];
         entityClass = (Class<ENTITY>)types[1];
 
+        String tableName = null;
+
+
         //get table matched by entity (analysis @Table)
         Table tableAnnotation = entityClass.getAnnotation(Table.class);
-        if(tableAnnotation == null) {
-            throw new RuntimeException("Class [" + entityClass.getName() +"] must be annotated with @Table!");
+        TableShard tableShardAnnotation = entityClass.getAnnotation(TableShard.class);
+
+        if(tableShardAnnotation != null) {
+            tableName = tableShardAnnotation.shardTable();
+        }
+        if(null == tableName && null != tableAnnotation) {
+            tableName = tableAnnotation.name();
+        }
+        if(null == tableName) {
+            throw new RuntimeException("Class [" + entityClass.getName() +"] must be annotated with TableName!");
         }
 
         //get all fields of entity
@@ -161,12 +172,11 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         rowMapper = new GenericMapper<ENTITY>(entityClass);
 
         //get shard strategy
-        TableShard tableShardAnnotation = entityClass.getAnnotation(TableShard.class);
         if(null != tableShardAnnotation) {
             int shardCount = tableShardAnnotation.shardCount();
             String shardColumn = tableShardAnnotation.shardColumn();
             String separator = tableShardAnnotation.separator();
-            table.setTableShardStrategy(new TableShardStrategy(shardCount, shardColumn, separator));
+            table.setTableShardStrategy(new TableShardStrategy(tableName, shardCount, shardColumn, separator));
             table.setTableShardHandler(tableShardHandler);
         }
 

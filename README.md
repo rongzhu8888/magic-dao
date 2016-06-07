@@ -2,7 +2,7 @@
 
 ## 1. 背景 ##
 
->在实际项目中，无论是管理类软件，还是互联网系统，都免不了与数据库打交道，考虑到某些系统，尤其是互联网类系统，并发性要求很高，数据量巨大，迭代周期又比较短，这就要求在架构设计过程中，不仅需要采取各种提高数据库读写性能的手段（纯粹从软件角度考虑，假设硬件性能已满足），如**主从读写分离**（一主多从）、**分库分表**，还需要考虑如何能够快速完成开发，以保证开发效率。
+>在实际项目中，无论是管理类软件，还是互联网系统，都免不了与数据库打交道，考虑到某些系统，尤其是互联网类系统，并发性要求很高，数据量巨大，迭代周期又比较短，这就要求在架构设计过程中，不仅需要采取各种提高数据库读写性能的手段（纯粹从软件角度考虑，假设硬件性能已满足），如**主从读写分离** （一主多从）、**分表** ，还需要考虑如何能够快速完成开发，以保证开发效率。
 
 >目前业界比较流行的java访问数据库访问框架有Hibernate、Mybatis、Spring-Jdbc等。Hibernate个人感觉偏重，如果要开发个只有几张表的小系统（模块\服务），使用Hibernate有点头重脚轻的感觉，其主打特性多级缓存在我看来也许不是那么重要，而且要完全熟练的掌握也得下一番功夫；而Mybatis和Hibernate一样，整个系统充斥着大量的OR映射文件,虽然它是目前许多互联网公司主流的DAO层框架，但是它依旧需要开发者自己解决主从读写分离和分表的问题；SpringJdbc同样如此。**magic-dao** 便是基于此背景出现的，它能够友好的解决了以上各种问题。
 
@@ -84,18 +84,67 @@
 		</bean>
 
 
-### 3.2 Po对象与表注解映射 ###
+### 3.2 Po对象与表映射配置 ###
 
-**四种注解：**
+**magic-dao** 提供了四类注解用以配置各种情况下的实体对象与表字段的映射关系。
 
-@Table：实体类注解，表示当前实体对应表名
+**@Table** ：实体类注解，表示当前实体对应表名
 
-@Key：实体属性注解，表示当前属性对应的字段为主键
+	@Target(ElementType.TYPE)
+	@Retention(RetentionPolicy.RUNTIME)
+	@Documented
+	public @interface Table {
 
-@Column：实体属性注解，表示当前属性对应表中的字段名
+    	String name();
 
-@TableShard：实体类注解，表示与当前实体对应的表采取的分表策略
+	}
 
+
+**@Key** ：实体属性注解，表示当前属性对应的字段为主键
+
+	@Target(ElementType.FIELD)
+	@Retention(RetentionPolicy.RUNTIME)
+	@Documented
+	public @interface Key {
+	
+	    String column();
+	
+	    boolean autoIncrement() default false;
+	
+	}
+
+**@Column** ：实体属性注解，表示当前属性对应表中的字段名
+	
+	@Target(ElementType.FIELD)
+	@Retention(RetentionPolicy.RUNTIME)
+	@Documented
+	public @interface Column {
+	
+	    String value();
+	
+	    boolean readOnly() default false; //not need to insert and update
+	
+	}
+
+
+**@TableShard** ：实体类注解，表示与当前实体对应的表采取的分表策略
+
+	@Target(ElementType.TYPE)
+	@Retention(RetentionPolicy.RUNTIME)
+	@Documented
+	public @interface TableShard {
+	
+	    String shardTable();
+	
+	    String shardColumn();
+	
+	    String separator() default "";
+	
+	    int shardCount();
+	}
+
+
+我们将从以下四种情况说明如何配置PO对象与Table的映射关系：
 
 - 普通唯一主键
 
@@ -182,9 +231,7 @@
 
 - 分表
 
-
-实现数据分表访问非常简单，只需通过**@TableShard** 注解配置分表策略即可。
-
+	实现数据分表访问非常简单，只需通过**@TableShard** 注解配置分表策略即可。
 
 		@Table(name = "mc_orders")
 		@TableShard(shardCount = 32, shardColumn = "user_id", separator = "_")
@@ -205,15 +252,14 @@
 		}
 
 
-**magic-dao** 默认通过**DefaultTableShardHandler** 读取分表策略并根据运行时shard字段的值采用**JedisHashSlot** 算法计算表名，不支持auto-increment字段。
+	**magic-dao** 默认通过**DefaultTableShardHandler** 读取分表策略并根据shard字段的值利用**JedisHashSlot** 算法计算实际表名，所以默认情况下不支持auto-increment字段（自增长字段在insert前无法知晓具体值），不过开发人员可以对该种情况实现自己的分表逻辑（如随机）。
 
-不过，**magic-dao**为开发人员预留了自定义handler的功能，只需实现TableShardHandler接口，并在Spring容器中将该handler实例注入到对应的Dao bean中即可，以实现（针对auto-increment字段或者其它目的）自定义分表逻辑。
-
+	**magic-dao**为开发人员预留了自定义分表逻辑的空间，只需实现**TableShardHandler** 接口，并在Spring容器中将该handler实例注入到对应的Dao bean中即可。
 
 
 		public class MyTableShardHandler implements TableShardHandler {
 		    @Override
-		    public String getShardTableName(String tableBasicName, int shardCount, String separator, Object columnValue) {
+		    public String getShardTableName(TableShardStrategy shardStrategy, Object columnValue) {
 
 				//实现自己的分表逻辑
 
@@ -222,7 +268,7 @@
 	    }
 
 
-...
+	...
 
 		<bean id="MyShardHandler" class="test.pers.zr.magic.dao.core.action.MyTableShardHandler" />
 
@@ -237,16 +283,19 @@
 
 ###3.3 Dao接口与实现类 ###
 
-- 唯一主键
+**magic-dao** 对单表访问（增删改查）非常方便，只需简单定义该表的接口与实现类，使得接口继承**MagicDao** ,
+实现类继承**MagicGenericDao** 即可。
 
-		//单表无需写任何方法，继承MagicDao接口即可
+- 唯一主键
+		
+		//接口
 		public interface MagicAppDao extends MagicDao<Long, AppPo> {
 
 		}
 
 		...
 
-		//单表无需实现任何方法，继承MagicGenericDao类即可
+		//实现类
 		public class MagicAppDaoImpl extends MagicGenericDao<Long, AppPo> implements MagicAppDao {
 
 		}
@@ -254,36 +303,24 @@
 
 - 联合主键
 
-		//单表无需写任何方法，继承MagicDao接口即可
+		//接口
 		public interface UserRoleDao extends MagicDao<UserRoleKey, UserRolePo> {
 
 		}
 
 		...
 
-		//单表无需实现任何方法，继承MagicGenericDao类即可
+		//实现类
 		public class UserRoleDaoImpl extends MagicGenericDao<UserRoleKey, UserRolePo> implements MagicAppDao {
 
 		}
 
 
-###3.4 Dao实例spring托管###
-由于spring单例模式的lazy-init属性默认值为false，即容器启动时，所有的Dao实例即被创建，且在创建过程中，父类MagicGenericDao的默认构造器将被调用，用以扫描并初始化当前Dao所依赖的Po对象与表的映射关系以及Po字段与setXxx()和getXxx()的映射关系。所以，无需担心反射效率问题。
-
-- 单数据源bean
-
-		<bean id="appDao" class="demo.pers.zr.magic.dao.app.MagicAppDaoImpl" >
-			<property name="magicDataSource" ref="singleDataSource" />
-		</bean>
-
-- 多数据源bean
-
-		<bean id="appDao" class="demo.pers.zr.magic.dao.app.MagicAppDaoImpl" >
-			<property name="magicDataSource" ref="multiDataSource" />
-		</bean>
+###3.4 Spring托管与反射效率###
+由于Spring单例模式的lazy-init属性默认值为false，即容器启动时，所有的Dao实例即被创建，在创建过程中，父类MagicGenericDao的默认构造器将被调用，用以扫描并初始化当前Dao所依赖的Po对象与表的映射关系以及Po字段与setXxx()和getXxx()的映射关系。所以，无需担心反射效率问题。
 
 ###3.5 事务 ###
-直接使用spring的DataSourceTransactionManager即可，注意多数据源场景下DataSourceTransactionManager的dataSource属性应该配置为master。
+直接使用spring的DataSourceTransactionManager即可，注意多数据源场景下DataSourceTransactionManager的dataSource属性应该配置为指向master库的数据源。
 
 	<!-- 事务管理器 -->
 	<bean id="transactionManager"
@@ -294,7 +331,9 @@
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
 ###3.6 复杂SQL ###
-magic-dao的设计初衷为解决读写分离和分表问题的同时提高开发效率（单表无需写SQL），并不表示满足所有的场景，如复杂的多表联合及嵌套查询等，那么如果遇到这种问题，使用了magic-dao组件后该咋办呢？不用担心，请继续阅读：
+magic-dao的设计初衷为解决读写分离和分表问题的同时简化单表的数据库访问，那么如果遇到复杂的多表联合及嵌套查询等该咋办呢？不用担心，请继续阅读：
+
+
 
 MagicSingleDataSource和MagicMultiDataSource都实现了接口MagicDataSource
 
@@ -314,37 +353,37 @@ MagicSingleDataSource和MagicMultiDataSource都实现了接口MagicDataSource
 然而，某些场景对数据的实时性要求非常高，需要从master库读取数据，**magic-dao** 提供了**@DataSource** 注解和**ReadingDataSourceAop** 来满足该需求，具体使用方法为：
 在需要设置从master库读取数据的Service实现类或者其具体某个方法上添加**@DataSource（type = DataSourceType.MASTER）** 注解，并且在spring容器中添加**ReadingDataSourceAop** 配置。
 
-**说明：** （1）@DataSource注解在类上，表示该类所有的方法都有此效果；（2）方法级别的注解较类级别优先级高。
+**说明：** （1）@DataSource注解在类上，表示该类所有的方法都应用此注解；（2）方法级别的注解较类级别优先级高，如果方法和类同时具有@DataSource注解，那么优先取方法上的注解。
 
 - DataSource注解
 
-	- 类级别注解
+	（1）类级别注解
 
-			//对该类中所有方法均有效
-			@DataSource(type = DataSourceType.MASTER)
-			public class AppServiceImpl {
+		//对该类中所有方法均有效
+		@DataSource(type = DataSourceType.MASTER)
+		public class AppServiceImpl {
 
-				...
+			...
 
-			}
-
-
-	- 方法级别注解
+		}
 
 
-			public class UserServiceImpl {
+	（2）方法级别注解
+
+
+		public class UserServiceImpl {
 
 			//仅对该方法有效
 			@DataSource(type = DataSourceType.MASTER)
 			public void getAttentionList() {
-
+	
 				...
-
+	
 			}
 
-			...
+		...
 
-			}
+		}
 
 
 
@@ -353,15 +392,121 @@ MagicSingleDataSource和MagicMultiDataSource都实现了接口MagicDataSource
 		<bean id="dataSourceAop" class="pers.zr.opensource.magic.dao.aop.MagicReadDataSourceAop"></bean>
 		<aop:config>
 			<aop:aspect ref="dataSourceAop">
-				<aop:around method="determine"
-							pointcut="execution(* demo.xxx..*ServiceImpl*.*(..))" />
+				<aop:around 
+					method="determine"
+					pointcut="execution(* demo.xxx..*ServiceImpl*.*(..))" />
 			</aop:aspect>
 		</aop:config>
 
 
+###3.8 单表动态查询 ###
+在介绍单表动态查询具体方法前，请先看**MagicDao** 提供的针对单表查询接口：
+	
+	//根据动态条件查询
+	public List<ENTITY> query(Matcher...conditions);
+
+	//根据动态条件查询并对结果排序
+    public List<ENTITY> query(List<Order> orders, Matcher...conditions);
+
+	//根据动态条件查询并分页
+    public List<ENTITY> query(Page page, Matcher...conditions);
+
+	//根据动态条件查询并对结果排序和分页
+    public List<ENTITY> query(Page page, List<Order> orders, Matcher...conditions);
+
+	//根据动态条件查询总数
+    public Long getCount(Matcher...conditions);
+
+
+**magic-dao** 通过**Matcher** 接口来抽象各类型的查询条件，具体如下：
+
+-	**EqualsMatcher** 
+	
+	>表示 **column = xxx** 
+
+-	**NotEqualsMatcher** 
+	
+	>表示 **column != xxx** 
+
+-	**GreaterMatcher** 
+
+	>表示 **column > xxx** 
+
+-	**GreaterOrEqualsMatcher** 
+
+	>表示 **column >= xxx** 
+
+-	**LessMatcher** 
+
+	>表示 **column < xxx** 
+
+-	**LessOrEqualsMatcher** 
+
+	>表示 **column <= xxx** 
+
+-	**InMatcher** 
+
+	>表示 **column in (xxx, yyy, ... zzz)** 
+
+-	**LikeMatcher** 
+
+	>表示 **column like %xxx%** 
+
+-	**LeftLikeMatcher** 
+
+	>表示 **column like xxx%** 
+
+-	**RightLikeMatcher**
+
+	>表示 **column like %xxx** 	
+
+-	**BetweenAndMatcher** 
+
+	>表示 **column between XXX and yyyy** 
+
+
+熟悉了上述的动态查询和Matcher接口后，动态查询将会异常简单：
+
+比如，查询指定用户的所有订单列表
+	
+	public List<UserOrder> getUserOrderList(Long userId) {
+
+		Matcher userMatcher = new EqualsMatcher("user_id", userId);
+		
+		return userOrderDao.query(userMatcher);
+
+	}
+
+查询指定用户的所有订单列表并按时间倒叙排序
+	
+	public List<UserOrder> getUserOrderList(Long userId) {
+
+		Matcher userMatcher = new EqualsMatcher("user_id", userId);
+	
+		List<Order> orders = new ArrayList<Order>();
+		Order order = new Order("create_time", OrderType.DESC);
+		orders.add(order);
+		
+		return userOrderDao.query(orders, userMatcher);
+
+	}
+
+
+分页查询用户的订单列表
+	
+	public List<UserOrder> getUserOrderList(Long userId, int pageNo, int pageSize) {
+
+		Matcher userMatcher = new EqualsMatcher("user_id", userId);
+
+		Page page = new Page(pageNo, pageSize);
+		
+		return userOrderDao.query(page, userMatcher);
+
+	}
+	
 
 ## TODO ##
 
 
- 1. 完成设计说明
- 2. 支持分库机制
+完成设计说明
+ 

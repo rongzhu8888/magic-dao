@@ -53,7 +53,7 @@ public class BaseJunit {
         table.setKeys(keyList);
 
         table.setTableShardHandler(new MyTableShardHandler());
-        table.setTableShardStrategy(new TableShardStrategy(32, "user_id", "_"));
+        table.setTableShardStrategy(new TableShardStrategy("tab_order", 32, "user_id", "_"));
 
     }
 }
