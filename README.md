@@ -84,9 +84,9 @@
 		</bean>
 
 
-### 3.2 Po对象与表映射配置 ###
+### 3.2 Po与表映射配置 ###
 
-**magic-dao** 提供了四类注解用以配置各种情况下的实体对象与表字段的映射关系。
+**magic-dao** 提供了三类注解用以配置实体对象与表字段的映射关系。
 
 **@Table** ：实体类注解，表示当前实体对应表名
 
@@ -127,26 +127,10 @@
 	}
 
 
-**@TableShard** ：实体类注解，表示与当前实体对应的表采取的分表策略
 
-	@Target(ElementType.TYPE)
-	@Retention(RetentionPolicy.RUNTIME)
-	@Documented
-	public @interface TableShard {
-	
-	    String shardTable();
-	
-	    String shardColumn();
-	
-	    String separator() default "";
-	
-	    int shardCount();
-	}
+我们将从以下三种情况说明如何配置PO对象与Table的映射关系：
 
-
-我们将从以下四种情况说明如何配置PO对象与Table的映射关系：
-
-- 普通唯一主键
+- **普通唯一主键**
 
 		@Table(name = "mc_app")
 		public class AppPo implements Serializable {
@@ -172,7 +156,7 @@
 		    ... <省略getXxx和setXxx方法>
 		}
 
-- 自增唯一主键
+- **自增唯一主键** 
 
 		@Table(name = "mc_app")
 		public class AppPo implements Serializable {
@@ -199,7 +183,7 @@
 		}
 
 
-- 联合主键
+- **联合主键** 
 
 		//主键对象
 		public class UserRoleKey implements Serializable {
@@ -225,57 +209,6 @@
 			... <省略getXxx和setXxx方法>
 
 		}
-
-
-
-
-- 分表
-
-	实现数据分表访问非常简单，只需通过**@TableShard** 注解配置分表策略即可。
-
-		@Table(name = "mc_orders")
-		@TableShard(shardCount = 32, shardColumn = "user_id", separator = "_")
-		public class OrderPo implements Serializable {
-			@Key(column = "order_id")
-			private Long orderId;
-
-			@Column(value = "user_id")
-			private Long userId;
-
-			@Column(value = "create_time")
-			private Date createTime;
-
-			...
-
-			... <省略getXxx和setXxx方法>
-
-		}
-
-
-	**magic-dao** 默认通过**DefaultTableShardHandler** 读取分表策略并根据shard字段的值利用**JedisHashSlot** 算法计算实际表名，所以默认情况下不支持auto-increment字段（自增长字段在insert前无法知晓具体值），不过开发人员可以对该种情况实现自己的分表逻辑（如随机）。
-
-	**magic-dao**为开发人员预留了自定义分表逻辑的空间，只需实现**TableShardHandler** 接口，并在Spring容器中将该handler实例注入到对应的Dao bean中即可。
-
-
-		public class MyTableShardHandler implements TableShardHandler {
-		    @Override
-		    public String getShardTableName(TableShardStrategy shardStrategy, Object columnValue) {
-
-				//实现自己的分表逻辑
-
-				return xxx;
-			}
-	    }
-
-
-	...
-
-		<bean id="MyShardHandler" class="test.pers.zr.magic.dao.core.action.MyTableShardHandler" />
-
-		<bean id="appDao" class="demo.pers.zr.magic.dao.app.MagicAppDaoImpl" >
-			<property name="magicDataSource" ref="multiDataSource" />
-			<property name="tableShardHandler" ref="MyShardHandler" />
-		</bean>
 
 
 
@@ -316,10 +249,8 @@
 		}
 
 
-###3.4 Spring托管与反射效率###
-由于Spring单例模式的lazy-init属性默认值为false，即容器启动时，所有的Dao实例即被创建，在创建过程中，父类MagicGenericDao的默认构造器将被调用，用以扫描并初始化当前Dao所依赖的Po对象与表的映射关系以及Po字段与setXxx()和getXxx()的映射关系。所以，无需担心反射效率问题。
 
-###3.5 事务 ###
+###3.4 事务 ###
 直接使用spring的DataSourceTransactionManager即可，注意多数据源场景下DataSourceTransactionManager的dataSource属性应该配置为指向master库的数据源。
 
 	<!-- 事务管理器 -->
@@ -330,30 +261,18 @@
 	<!-- 事务注解驱动，标注@Transactional的类和方法将具有事务性 -->
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
-###3.6 复杂SQL ###
-magic-dao的设计初衷为解决读写分离和分表问题的同时简化单表的数据库访问，那么如果遇到复杂的多表联合及嵌套查询等该咋办呢？不用担心，请继续阅读：
 
-
-
-MagicSingleDataSource和MagicMultiDataSource都实现了接口MagicDataSource
-
-	public interface MagicDataSource {
-
-	    JdbcTemplate getJdbcTemplate(ActionMode actionMode);
-
-	    DataSource getJdbcDataSource(ActionMode actionMode);
-
-	}
-
-
-该接口有2个方法，分别为getJdbcTemplate和getJdbcDataSource，所以对于复杂的SQL场景，可以首先通过这两个方法可以分别得到JdbcTemplate和DataSource对象，然后编程访问数据库即可。
-
-###3.7 读写分离 ###
+###3.5 读写分离 ###
 我们知道，多数据源读写分离场景中，一般是写master库，读slave库。**magic-dao** 默认情况下也是如此，开发者只需提供多个数据源，并配置到**MagicMultiDataSource** 实例中即可，无需做任何额外配置。
+
 然而，某些场景对数据的实时性要求非常高，需要从master库读取数据，**magic-dao** 提供了**@DataSource** 注解和**ReadingDataSourceAop** 来满足该需求，具体使用方法为：
 在需要设置从master库读取数据的Service实现类或者其具体某个方法上添加**@DataSource（type = DataSourceType.MASTER）** 注解，并且在spring容器中添加**ReadingDataSourceAop** 配置。
 
-**说明：** （1）@DataSource注解在类上，表示该类所有的方法都应用此注解；（2）方法级别的注解较类级别优先级高，如果方法和类同时具有@DataSource注解，那么优先取方法上的注解。
+**注意：**
+
+ （1）@DataSource注解在类上，表示该类所有的方法都应用此注解；
+
+（2）方法级别的注解较类级别优先级高，如果方法和类同时具有@DataSource注解，那么优先取方法上的注解。
 
 - DataSource注解
 
@@ -399,7 +318,85 @@ MagicSingleDataSource和MagicMultiDataSource都实现了接口MagicDataSource
 		</aop:config>
 
 
-###3.8 单表动态查询 ###
+
+###3.6 分表 ###
+	
+**magic-dao** 提供**@TableShard** 注解用以配置分表策略。
+	
+	@Target(ElementType.TYPE)
+	@Retention(RetentionPolicy.RUNTIME)
+	@Documented
+	public @interface TableShard {
+	
+	    String shardTable();
+	
+	    String shardColumn();
+	
+	    String separator() default "";
+	
+	    int shardCount();
+	}
+
+
+- **单表分表访问** 
+
+	实现单表分表访问非常简单，只需通过**@TableShard** 在PO对象上配置分表策略即可。
+	
+		@TableShard(shardTable = "mc_orders", shardCount = 32, shardColumn = "user_id", separator = "_")
+		public class OrderPo implements Serializable {
+	
+			@Key(column = "order_id")
+			private Long orderId;
+	
+			@Column(value = "user_id")
+			private Long userId;
+	
+			@Column(value = "create_time")
+			private Date createTime;
+	
+			...
+	
+			... <省略getXxx和setXxx方法>
+	
+		}
+
+
+-	**多表分表访问** 
+
+	对于多表联合查询情况下的分表访问，//TODO
+
+
+-	**自定义分表逻辑** 
+
+	**magic-dao** 默认使用**DefaultTableShardHandler** 读取分表策略并根据shard字段的值利用**JedisHashSlot**  算法（redis cluster中key定位算法）计算实际表名，所以默认情况下不支持auto-increment字段（自增长字段在insert前无法知晓具体值），不过开发人员可以对该种情况实现自己的分表逻辑（如随机）。
+	
+	**magic-dao**为开发人员预留了自定义分表逻辑的空间，只需实现**TableShardHandler** 接口，并在Spring容器中将该handler实例注入到对应的Dao bean中即可。
+	
+	
+		public class MyTableShardHandler implements TableShardHandler {
+		    @Override
+		    public String getShardTableName(TableShardStrategy shardStrategy, Object columnValue) {
+	
+				//实现自己的分表逻辑
+	
+				return xxx;
+			}
+	    }
+	
+	
+	...
+	
+		<bean id="MyShardHandler" class="test.pers.zr.magic.dao.core.action.MyTableShardHandler" />
+	
+		<bean id="appDao" class="demo.pers.zr.magic.dao.app.MagicAppDaoImpl" >
+			<property name="magicDataSource" ref="multiDataSource" />
+			<property name="tableShardHandler" ref="MyShardHandler" />
+		</bean>
+
+
+
+
+###3.7 单表动态查询 ###
 在介绍单表动态查询具体方法前，请先看**MagicDao** 提供的针对单表查询接口：
 	
 	//根据动态条件查询
@@ -504,6 +501,31 @@ MagicSingleDataSource和MagicMultiDataSource都实现了接口MagicDataSource
 
 	}
 	
+
+
+###3.8 多表联合查询 ###
+magic-dao的设计初衷为解决读写分离和分表问题的同时简化单表的数据库访问，那么如果遇到复杂的多表联合及嵌套查询等该咋办呢？不用担心，请继续阅读：
+
+
+
+MagicSingleDataSource和MagicMultiDataSource都实现了接口MagicDataSource
+
+	public interface MagicDataSource {
+
+	    JdbcTemplate getJdbcTemplate(ActionMode actionMode);
+
+	    DataSource getJdbcDataSource(ActionMode actionMode);
+
+	}
+
+
+该接口有2个方法，分别为getJdbcTemplate和getJdbcDataSource，所以对于复杂的SQL场景，可以首先通过这两个方法可以分别得到JdbcTemplate和DataSource对象，然后编程访问数据库即可。
+
+
+###3.9 效率###
+由于Spring单例模式的lazy-init属性默认值为false，即容器启动时，所有的Dao实例即被创建，在创建过程中，父类MagicGenericDao的默认构造器将被调用，用以扫描并初始化当前Dao所依赖的Po对象与表的映射关系以及Po字段与setXxx()和getXxx()的映射关系。所以，Spring容器在启动时便已经将所有的注解和映射关系都已经解析完毕，不用太担心效率问题。
+
+
 
 ## TODO ##
 
