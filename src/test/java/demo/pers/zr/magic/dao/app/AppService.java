@@ -1,6 +1,6 @@
 package demo.pers.zr.magic.dao.app;
 
-import pers.zr.opensource.magic.dao.annotation.DataSource;
+import pers.zr.opensource.magic.dao.annotation.QueryDataSource;
 import pers.zr.opensource.magic.dao.constants.DataSourceType;
 import pers.zr.opensource.magic.dao.matcher.LeftLikeMatcher;
 import pers.zr.opensource.magic.dao.matcher.Matcher;
@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * Created by zhurong on 2016-5-6.
  */
-@DataSource(type = DataSourceType.MASTER)
+@QueryDataSource(type = DataSourceType.MASTER)
 public class AppService {
 
     private MagicAppDao appDao;

@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 /**
  * Created by zhurong on 2016/4/30.
  */
-public class MagicSingleDataSourceTest {
+public class MagicSingleQueryDataSourceTest {
 
     private static MagicSingleDataSource dataSource = new MagicSingleDataSource();
 
