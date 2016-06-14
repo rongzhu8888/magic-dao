@@ -5,19 +5,19 @@ import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 import pers.zr.opensource.magic.dao.MagicMultiDataSource;
-import pers.zr.opensource.magic.dao.annotation.DataSource;
+import pers.zr.opensource.magic.dao.annotation.QueryDataSource;
 import pers.zr.opensource.magic.dao.constants.DataSourceType;
 
 import java.lang.reflect.Method;
 
 /**
  *
- * Aop to analysis @DataSource annotation, and determine the reading dataSource type: master or slave
+ * Aop to analysis @QueryDataSource annotation, and determine the reading dataSource type: master or slave
  * Created by zhurong on 2016-5-23.
  */
-public class MagicReadDataSourceAop {
+public class MagicQueryDataSourceAop {
 
-    private Log log = LogFactory.getLog(MagicReadDataSourceAop.class);
+    private Log log = LogFactory.getLog(MagicQueryDataSourceAop.class);
 
     public Object determine(ProceedingJoinPoint pjp) {
         try {
@@ -25,13 +25,13 @@ public class MagicReadDataSourceAop {
             Method method = signature.getMethod();
             Class<?> clazz = method.getDeclaringClass();
 
-            DataSource dataSourceAnnotation = method.getAnnotation(DataSource.class);
-            if(null == dataSourceAnnotation) {
-                dataSourceAnnotation = clazz.getAnnotation(DataSource.class);
+            QueryDataSource queryDataSourceAnnotation = method.getAnnotation(QueryDataSource.class);
+            if(null == queryDataSourceAnnotation) {
+                queryDataSourceAnnotation = clazz.getAnnotation(QueryDataSource.class);
             }
-            DataSourceType currentType = (null != dataSourceAnnotation) ? dataSourceAnnotation.type() : DataSourceType.SLAVE;
+            DataSourceType currentType = (null != queryDataSourceAnnotation) ? queryDataSourceAnnotation.type() : DataSourceType.SLAVE;
             //set current thread reading dataSource type
-            MagicMultiDataSource.currentThreadReadDataSourceType.set(currentType);
+            MagicMultiDataSource.currentThreadQueryDataSourceType.set(currentType);
             if(log.isDebugEnabled()) {
                 log.debug("invoke service=" + clazz.getName() + "." + method.getName() + ", readingDataSource=" +  currentType);
             }
@@ -40,7 +40,7 @@ public class MagicReadDataSourceAop {
             throw new RuntimeException(t);
         } finally {
             //remove current thread reading dataSource type
-            MagicMultiDataSource.currentThreadReadDataSourceType.remove();
+            MagicMultiDataSource.currentThreadQueryDataSourceType.remove();
 
         }
     }

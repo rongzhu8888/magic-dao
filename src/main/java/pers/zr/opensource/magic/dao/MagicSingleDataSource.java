@@ -9,7 +9,7 @@ import javax.sql.DataSource;
 
 /**
  *
- * Single DataSource
+ * Single QueryDataSource
  *
  * Created by zhurong on 2016-4-28.
  */

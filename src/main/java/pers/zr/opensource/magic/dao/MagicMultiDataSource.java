@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Multiple DataSource
+ * Multiple QueryDataSource
  *
  * For Reading and writing separation
  *
@@ -23,7 +23,7 @@ public class MagicMultiDataSource implements MagicDataSource {
 
     private Log log = LogFactory.getLog(MagicMultiDataSource.class);
 
-    public static ThreadLocal<DataSourceType> currentThreadReadDataSourceType = new ThreadLocal<DataSourceType>();
+    public static ThreadLocal<DataSourceType> currentThreadQueryDataSourceType = new ThreadLocal<DataSourceType>();
 
     private DataSource master;
 
@@ -38,7 +38,7 @@ public class MagicMultiDataSource implements MagicDataSource {
     @Override
     public JdbcTemplate getJdbcTemplate(ActionMode actionMode) {
         if(CollectionUtils.isEmpty(this.slaves)) {
-            throw new RuntimeException("MagicMultiDataSource must has at least one slave DataSource!");
+            throw new RuntimeException("MagicMultiDataSource must has at least one slave QueryDataSource!");
         }
 
         boolean isNowMasterDataSource;
@@ -47,7 +47,7 @@ public class MagicMultiDataSource implements MagicDataSource {
             isNowMasterDataSource = true;
 
         } else if(ActionMode.QUERY == actionMode){
-            if(DataSourceType.MASTER == currentThreadReadDataSourceType.get()) {
+            if(DataSourceType.MASTER == currentThreadQueryDataSourceType.get()) {
                 //force to read from master
                 isNowMasterDataSource = true;
             }else {
@@ -96,13 +96,13 @@ public class MagicMultiDataSource implements MagicDataSource {
     @Override
     public DataSource getJdbcDataSource(ActionMode actionMode) {
         if(CollectionUtils.isEmpty(this.slaves)) {
-            throw new RuntimeException("MagicMultiDataSource must has at least one slave DataSource!");
+            throw new RuntimeException("MagicMultiDataSource must has at least one slave QueryDataSource!");
         }
         DataSource dataSource;
         if(ActionMode.INSERT == actionMode || ActionMode.UPDATE == actionMode || ActionMode.DELETE == actionMode) {
             dataSource = master;
         }else if(ActionMode.QUERY == actionMode) {
-            if(DataSourceType.MASTER == currentThreadReadDataSourceType.get()) {
+            if(DataSourceType.MASTER == currentThreadQueryDataSourceType.get()) {
                 dataSource = master;
             }else {
                 int randomSlaveIndex = new Random().nextInt(slaves.size());
@@ -121,7 +121,7 @@ public class MagicMultiDataSource implements MagicDataSource {
     public void setSlaves(List<DataSource> slaves) {
         this.slaves = slaves;
         if(CollectionUtils.isEmpty(this.slaves)) {
-            throw new RuntimeException("MagicMultiDataSource must has at least one slave DataSource!");
+            throw new RuntimeException("MagicMultiDataSource must has at least one slave QueryDataSource!");
         }
     }
 }
