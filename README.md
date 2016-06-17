@@ -265,21 +265,21 @@
 ###3.5 读写分离 ###
 我们知道，多数据源读写分离场景中，一般是写master库，读slave库。**magic-dao** 默认情况下也是如此，开发者只需提供多个数据源，并配置到**MagicMultiDataSource** 实例中即可，无需做任何额外配置。
 
-然而，某些场景对数据的实时性要求非常高，需要从master库读取数据，**magic-dao** 提供了**@DataSource** 注解和**ReadingDataSourceAop** 来满足该需求，具体使用方法为：
-在需要设置从master库读取数据的Service实现类或者其具体某个方法上添加**@DataSource（type = DataSourceType.MASTER）** 注解，并且在spring容器中添加**ReadingDataSourceAop** 配置。
+然而，某些场景对数据的实时性要求非常高，需要从master库读取数据，**magic-dao** 提供了**@QueryDataSource** 注解和**MagicQueryDataSourceAop** 来满足该需求，具体使用方法为：
+在需要设置从master库读取数据的Service实现类或者其具体某个方法上添加**@QueryDataSource（type = DataSourceType.MASTER）** 注解，并且在spring容器中添加**MagicQueryDataSourceAop** 配置。
 
 **注意：**
 
- （1）@DataSource注解在类上，表示该类所有的方法都应用此注解；
+ （1）@QueryDataSource注解在类上，表示该类所有的方法都应用此注解；
 
-（2）方法级别的注解较类级别优先级高，如果方法和类同时具有@DataSource注解，那么优先取方法上的注解。
+（2）方法级别的注解较类级别优先级高，如果方法和类同时具有@QueryDataSource注解，那么优先取方法上的注解。
 
-- DataSource注解
+- QueryDataSource注解
 
 	（1）类级别注解
 
 		//对该类中所有方法均有效
-		@DataSource(type = DataSourceType.MASTER)
+		@QueryDataSource(type = DataSourceType.MASTER)
 		public class AppServiceImpl {
 
 			...
@@ -293,7 +293,7 @@
 		public class UserServiceImpl {
 
 			//仅对该方法有效
-			@DataSource(type = DataSourceType.MASTER)
+			@QueryDataSource(type = DataSourceType.MASTER)
 			public void getAttentionList() {
 	
 				...
@@ -308,7 +308,7 @@
 
 - AOP配置
 
-		<bean id="dataSourceAop" class="pers.zr.opensource.magic.dao.aop.MagicReadDataSourceAop"></bean>
+		<bean id="dataSourceAop" class="pers.zr.opensource.magic.dao.aop.MagicQueryDataSourceAop"></bean>
 		<aop:config>
 			<aop:aspect ref="dataSourceAop">
 				<aop:around 
