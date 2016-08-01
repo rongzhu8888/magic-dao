@@ -4,7 +4,7 @@ import com.mchange.v2.c3p0.ComboPooledDataSource;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
-import pers.zr.opensource.magic.dao.MagicMultiDataSource;
+import pers.zr.opensource.magic.dao.MagicMultipleDataSource;
 import pers.zr.opensource.magic.dao.constants.ActionMode;
 
 import javax.sql.DataSource;
@@ -19,7 +19,7 @@ import static org.junit.Assert.assertNotEquals;
  */
 public class MagicMultiQueryDataSourceTest {
 
-    private static MagicMultiDataSource dataSource = new MagicMultiDataSource();
+    private static MagicMultipleDataSource dataSource = new MagicMultipleDataSource();
 
     @BeforeClass
     public static void initDataSource() throws Exception {

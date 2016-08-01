@@ -19,7 +19,7 @@ public class MagicSingleDataSource implements MagicDataSource {
 
     private DataSource dataSource;
 
-    private static JdbcTemplate jdbcTemplate;
+    private static volatile JdbcTemplate jdbcTemplate;
 
     private final Object object = new Object();
 

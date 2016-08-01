@@ -78,7 +78,7 @@
 		<property name="maxStatementsPerConnection" value="${mysql.maxStatementsPerConnection}" />
 	</bean>
 
-	<bean id="multiDataSource" class="pers.zr.opensource.magic.dao.MagicMultiDataSource">
+	<bean id="multiDataSource" class="pers.zr.opensource.magic.dao.MagicMultipleDataSource">
 		<property name="master" ref="master" />
 		<property name="slaves">
 			<list>
