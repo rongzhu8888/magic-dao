@@ -4,7 +4,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
-import pers.zr.opensource.magic.dao.MagicMultiDataSource;
+import pers.zr.opensource.magic.dao.MagicMultipleDataSource;
 import pers.zr.opensource.magic.dao.annotation.QueryDataSource;
 import pers.zr.opensource.magic.dao.constants.DataSourceType;
 
@@ -31,7 +31,7 @@ public class MagicQueryDataSourceAop {
             }
             DataSourceType currentType = (null != queryDataSourceAnnotation) ? queryDataSourceAnnotation.type() : DataSourceType.SLAVE;
             //set current thread reading dataSource type
-            MagicMultiDataSource.currentThreadQueryDataSourceType.set(currentType);
+            MagicMultipleDataSource.currentThreadQueryDataSourceType.set(currentType);
             if(log.isDebugEnabled()) {
                 log.debug("invoke service=" + clazz.getName() + "." + method.getName() + ", readingDataSource=" +  currentType);
             }
@@ -40,7 +40,7 @@ public class MagicQueryDataSourceAop {
             throw new RuntimeException(t);
         } finally {
             //remove current thread reading dataSource type
-            MagicMultiDataSource.currentThreadQueryDataSourceType.remove();
+            MagicMultipleDataSource.currentThreadQueryDataSourceType.remove();
 
         }
     }

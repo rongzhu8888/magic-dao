@@ -13,15 +13,15 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * Multiple QueryDataSource
+ * Multiple DataSource
  *
  * For Reading and writing separation
  *
  * Created by zhurong on 2016-4-28.
  */
-public class MagicMultiDataSource implements MagicDataSource {
+public class MagicMultipleDataSource implements MagicDataSource {
 
-    private Log log = LogFactory.getLog(MagicMultiDataSource.class);
+    private Log log = LogFactory.getLog(MagicMultipleDataSource.class);
 
     public static ThreadLocal<DataSourceType> currentThreadQueryDataSourceType = new ThreadLocal<DataSourceType>();
 
@@ -29,8 +29,8 @@ public class MagicMultiDataSource implements MagicDataSource {
 
     private List<DataSource> slaves;
 
-    private static JdbcTemplate masterJdbcTemplate;
-    private static List<JdbcTemplate> slaveJdbcTemplates;
+    private volatile JdbcTemplate masterJdbcTemplate;
+    private volatile List<JdbcTemplate> slaveJdbcTemplates;
 
     private final Object object1 = new Object();
     private final Object object2 = new Object();

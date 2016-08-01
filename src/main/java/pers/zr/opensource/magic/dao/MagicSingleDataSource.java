@@ -9,7 +9,7 @@ import javax.sql.DataSource;
 
 /**
  *
- * Single QueryDataSource
+ * Single DataSource
  *
  * Created by zhurong on 2016-4-28.
  */
@@ -19,7 +19,7 @@ public class MagicSingleDataSource implements MagicDataSource {
 
     private DataSource dataSource;
 
-    private static JdbcTemplate jdbcTemplate;
+    private volatile JdbcTemplate jdbcTemplate;
 
     private final Object object = new Object();
 
