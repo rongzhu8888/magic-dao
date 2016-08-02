@@ -8,7 +8,7 @@ import pers.zr.opensource.magic.dao.shard.TableShardStrategy;
  */
 public class MyTableShardHandler implements TableShardHandler {
     @Override
-    public String getActualTableName(TableShardStrategy shardStrategy, Object columnValue) {
+    public String getRealTableName(TableShardStrategy shardStrategy, Object... columnValue) {
         return "table_xx";
     }
 }

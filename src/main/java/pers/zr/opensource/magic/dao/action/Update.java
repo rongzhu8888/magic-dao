@@ -52,14 +52,7 @@ public class Update extends  ConditionAction {
             throw new RuntimeException("update fields can not be empty!");
         }
 
-        String targetTableName;
-        if(null != table.getTableShardStrategy()) {
-            targetTableName = getActualTableName();
-        }else {
-            targetTableName = this.table.getTableName();
-        }
-
-        StringBuilder sqlBuilder = new StringBuilder("UPDATE ").append(targetTableName).append(" SET ");
+        StringBuilder sqlBuilder = new StringBuilder("UPDATE ").append(getRealTableName()).append(" SET ");
         List<Object> paramsList = new ArrayList<Object>();
         for(String column : updateFields.keySet()) {
             sqlBuilder.append(column).append("=?,");

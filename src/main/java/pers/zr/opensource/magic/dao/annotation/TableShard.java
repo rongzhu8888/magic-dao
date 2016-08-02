@@ -13,9 +13,9 @@ public @interface TableShard {
 
     String shardTable();
 
-    String shardColumn();
-
-    String separator() default "";
+    String[] shardColumns();
 
     int shardCount();
+
+    String separator() default "_";
 }

@@ -175,9 +175,9 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         //get shard strategy
         if(null != tableShardAnnotation) {
             int shardCount = tableShardAnnotation.shardCount();
-            String shardColumn = tableShardAnnotation.shardColumn();
+            String[] shardColumns = tableShardAnnotation.shardColumns();
             String separator = tableShardAnnotation.separator();
-            table.setTableShardStrategy(new TableShardStrategy(tableName, shardCount, shardColumn, separator));
+            table.setTableShardStrategy(new TableShardStrategy(tableName, shardCount, shardColumns, separator));
             table.setTableShardHandler(tableShardHandler);
         }
 

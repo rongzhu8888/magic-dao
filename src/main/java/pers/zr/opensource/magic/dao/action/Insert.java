@@ -2,10 +2,13 @@ package pers.zr.opensource.magic.dao.action;
 
 import org.springframework.util.CollectionUtils;
 import pers.zr.opensource.magic.dao.constants.ActionMode;
+import pers.zr.opensource.magic.dao.constants.MatchType;
+import pers.zr.opensource.magic.dao.matcher.Matcher;
 import pers.zr.opensource.magic.dao.shard.TableShardHandler;
 import pers.zr.opensource.magic.dao.shard.TableShardStrategy;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +23,7 @@ public class Insert extends Action {
         this.insertFields = insertFields;
     }
 
-    private String actualTableName = null;
+    private String realTableName = null;
 
     @Override
     public String getSql() {
@@ -48,6 +51,33 @@ public class Insert extends Action {
         return ActionMode.INSERT;
     }
 
+    protected String getRealTableName() {
+        if(null == realTableName) {
+            //get actual table name when shard exist
+            TableShardStrategy tableShardStrategy = table.getTableShardStrategy();
+            TableShardHandler tableShardHandler = table.getTableShardHandler();
+            if(null != tableShardHandler && null != tableShardStrategy) {
+                String[] shardColumns = tableShardStrategy.getShardColumns();
+                List<String> shardColumnList = Arrays.asList(shardColumns);
+                List<Object> shardColumnValueList = new ArrayList<Object>();
+
+                for(String column : insertFields.keySet()) {
+                    if(shardColumnList.contains(column)) {
+                        shardColumnValueList.add(insertFields.get(column));
+                    }
+                }
+                realTableName = tableShardHandler.getRealTableName(tableShardStrategy,shardColumnValueList.toArray());
+                if(tableShardStrategy != null && this.realTableName == null) {
+                    throw new RuntimeException("Failed to get real name of shard table!");
+                }
+
+            }else {
+                realTableName = table.getTableName();
+            }
+        }
+        return realTableName;
+
+    }
 
     private void parse() {
 
@@ -60,25 +90,13 @@ public class Insert extends Action {
 
         TableShardStrategy tableShardStrategy = table.getTableShardStrategy();
         TableShardHandler tableShardHandler = table.getTableShardHandler();
+        
 
         for(String column : insertFields.keySet()) {
             sqlBuilder.append(column).append(",");
             Object value = insertFields.get(column);
             paramsList.add(value);
 
-            if(null == actualTableName) {
-                if(null != tableShardHandler && null != tableShardStrategy) {
-                    String shardColumn = tableShardStrategy.getShardColumn();
-                    if(column.equalsIgnoreCase(shardColumn)) {
-                        actualTableName = tableShardHandler.getActualTableName(tableShardStrategy, value);
-                    }
-                }
-            }
-
-        }
-
-        if(tableShardStrategy != null && this.actualTableName == null) {
-            throw new RuntimeException("Failed to get actual name of shard table!");
         }
 
         sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(",")).append(") VALUES (");
@@ -87,15 +105,7 @@ public class Insert extends Action {
         }
         sqlBuilder.deleteCharAt(sqlBuilder.lastIndexOf(",")).append(")");
 
-        String targetTableName;
-        if(null != table.getTableShardStrategy()) {
-            targetTableName = this.actualTableName;
-        }else {
-            targetTableName = this.table.getTableName();
-        }
-
-
-        this.sql = "INSERT INTO " + targetTableName + sqlBuilder.toString();
+        this.sql = "INSERT INTO " + getRealTableName() + sqlBuilder.toString();
         this.params = paramsList.toArray();
 
 

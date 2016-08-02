@@ -12,14 +12,14 @@ public class TableShardStrategy {
 
     private int shardCount;
 
-    private String shardColumn;
+    private String[] shardColumns;
 
     private String separator;
 
-    public TableShardStrategy(String shardTable, int shardCount, String shardColumn, String separator) {
+    public TableShardStrategy(String shardTable, int shardCount, String[] shardColumns, String separator) {
         this.shardTable = shardTable;
         this.shardCount = shardCount;
-        this.shardColumn = shardColumn;
+        this.shardColumns = shardColumns;
         this.separator = separator;
     }
 
@@ -31,8 +31,8 @@ public class TableShardStrategy {
         return shardCount;
     }
 
-    public String getShardColumn() {
-        return shardColumn;
+    public String[] getShardColumns() {
+        return shardColumns;
     }
 
     public String getSeparator() {

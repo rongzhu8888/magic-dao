@@ -10,8 +10,8 @@ import java.util.Date;
 /**
  * Created by zhurong on 2016-5-6.
  */
-@Table(name = "mc_app")
-//@TableShard(shardTable = "mc_app", shardColumn = "app_id", shardCount = 32, separator = "_")
+//@Table(name = "mc_app")
+@TableShard(shardTable = "mc_app", shardColumns = {"app_id"}, shardCount = 32, separator = "_")
 public class AppEntity extends AppKey implements Serializable {
 
     @Column(value = "app_name")
