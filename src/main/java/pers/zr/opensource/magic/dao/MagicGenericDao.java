@@ -170,6 +170,7 @@ public abstract class MagicGenericDao<KEY extends Serializable, ENTITY extends S
         table.setDefaultUpdateColumns(defaultUpdateColumns);
 
         rowMapper = new GenericMapper<ENTITY>(entityClass);
+        MapperContextHolder.setRowMapper(entityClass, rowMapper);
 
         //get shard strategy
         if(null != tableShardAnnotation) {

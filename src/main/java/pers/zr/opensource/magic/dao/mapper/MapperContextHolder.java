@@ -1,5 +1,6 @@
 package pers.zr.opensource.magic.dao.mapper;
 
+import org.springframework.jdbc.core.RowMapper;
 import pers.zr.opensource.magic.dao.constants.MethodType;
 
 import java.lang.reflect.Field;
@@ -12,6 +13,9 @@ import java.util.Map;
  */
 public class MapperContextHolder {
 
+    /** class-rowMapper*/
+    private static Map<Class<?>, RowMapper<?>> rowMapperMap = new HashMap<Class<?>, RowMapper<?>>();
+
     /** class-field-setMethod*/
     private static Map<Class<?>, Map<Field, Method>> settersMap = new HashMap<Class<?>, Map<Field, Method>>();
 
@@ -20,6 +24,14 @@ public class MapperContextHolder {
 
     /** class-column-field*/
     private static Map<Class<?>, Map<String, Field>> fieldsMap = new HashMap<Class<?>, Map<String, Field>>();
+
+    public static void setRowMapper(Class<?> clazz, RowMapper<?> rowMapper) {
+        rowMapperMap.put(clazz, rowMapper);
+    }
+
+    public static RowMapper<?> getRowMapper(Class<?> clazz) {
+        return rowMapperMap.get(clazz);
+    }
 
     public static void setFieldWithColumn(Class<?> clazz, String column, Field field) {
         Map<String, Field> colFieldMap = fieldsMap.get(clazz);
@@ -82,4 +94,6 @@ public class MapperContextHolder {
 
         return methodMap;
     }
+
+
 }
