@@ -26,6 +26,25 @@
     	<version>1.0.1</version>
 	</dependency>
 
+内部依赖spring-jdbc:4.2.3.RELEASE、 spring-aspects:4.2.3.RELEASE，如果spring版本冲突，可以将内部依赖排除：
+
+	<dependency>
+		<groupId>com.github.rongzhu8888</groupId>
+    	<artifactId>magic-dao</artifactId>
+    	<version>1.0.1</version>
+		<exclusions>
+	        <exclusion>
+	            <groupId>org.springframework</groupId>
+	            <artifactId>spring-jdbc</artifactId>
+	        </exclusion>
+	        <exclusion>
+	            <groupId>org.springframework</groupId>
+	            <artifactId>spring-aspects</artifactId>
+	        </exclusion>
+	    </exclusions>
+	</dependency>
+
+
 
 ### 3.1 数据源配置 ###
 

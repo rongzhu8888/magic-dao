@@ -1,7 +1,5 @@
 package pers.zr.opensource.magic.dao.action;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import pers.zr.opensource.magic.dao.shard.TableShardHandler;
 import pers.zr.opensource.magic.dao.shard.TableShardStrategy;
 
@@ -87,26 +85,23 @@ public class ActionTable {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-
         if (o == null || getClass() != o.getClass()) return false;
 
         ActionTable that = (ActionTable) o;
 
-        return new EqualsBuilder()
-                .append(tableName, that.tableName)
-                .append(keys, that.keys)
-                .append(columns, that.columns)
-                .append(tableShardStrategy, that.tableShardStrategy)
-                .isEquals();
+        if (!tableName.equals(that.tableName)) return false;
+        if (!keys.equals(that.keys)) return false;
+        if (!columns.equals(that.columns)) return false;
+        return tableShardStrategy.equals(that.tableShardStrategy);
+
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37)
-                .append(tableName)
-                .append(keys)
-                .append(columns)
-                .append(tableShardStrategy)
-                .toHashCode();
+        int result = tableName.hashCode();
+        result = 31 * result + keys.hashCode();
+        result = 31 * result + columns.hashCode();
+        result = 31 * result + tableShardStrategy.hashCode();
+        return result;
     }
 }
