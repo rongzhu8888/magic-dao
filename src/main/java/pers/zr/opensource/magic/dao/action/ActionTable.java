@@ -4,6 +4,7 @@ import pers.zr.opensource.magic.dao.shard.TableShardHandler;
 import pers.zr.opensource.magic.dao.shard.TableShardStrategy;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by zhurong on 2016-4-28.
@@ -82,26 +83,20 @@ public class ActionTable {
         this.defaultUpdateColumns = defaultUpdateColumns;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         ActionTable that = (ActionTable) o;
-
-        if (!tableName.equals(that.tableName)) return false;
-        if (!keys.equals(that.keys)) return false;
-        if (!columns.equals(that.columns)) return false;
-        return tableShardStrategy.equals(that.tableShardStrategy);
-
+        return Objects.equals(tableName, that.tableName) &&
+                Objects.equals(keys, that.keys) &&
+                Objects.equals(columns, that.columns) &&
+                Objects.equals(tableShardStrategy, that.tableShardStrategy);
     }
 
     @Override
     public int hashCode() {
-        int result = tableName.hashCode();
-        result = 31 * result + keys.hashCode();
-        result = 31 * result + columns.hashCode();
-        result = 31 * result + tableShardStrategy.hashCode();
-        return result;
+        return Objects.hash(tableName, keys, columns, tableShardStrategy);
     }
 }
