@@ -4,13 +4,12 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.util.CollectionUtils;
+import pers.zr.opensource.magic.dao.runtime.RuntimeQueryDataSource;
 import pers.zr.opensource.magic.dao.constants.ActionMode;
 import pers.zr.opensource.magic.dao.constants.DataSourceType;
 
 import javax.sql.DataSource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Multiple DataSource
@@ -23,72 +22,50 @@ public class MagicMultipleDataSource implements MagicDataSource {
 
     private Log log = LogFactory.getLog(MagicMultipleDataSource.class);
 
-    public static ThreadLocal<DataSourceType> currentThreadQueryDataSourceType = new ThreadLocal<DataSourceType>();
-
     private DataSource master;
+    private Map<String, DataSource> slaves;
 
-    private List<DataSource> slaves;
+    private JdbcTemplate masterJdbcTemplate;
+    private Map<String, JdbcTemplate> slaveJdbcTemplates;
 
-    private volatile JdbcTemplate masterJdbcTemplate;
-    private volatile List<JdbcTemplate> slaveJdbcTemplates;
-
-    private final Object object1 = new Object();
-    private final Object object2 = new Object();
+    private List<String> dataSourceNameList;
 
     @Override
     public JdbcTemplate getJdbcTemplate(ActionMode actionMode) {
         if(CollectionUtils.isEmpty(this.slaves)) {
-            throw new RuntimeException("MagicMultiDataSource must has at least one slave QueryDataSource!");
+            throw new RuntimeException("MagicMultipleDataSource must has at least one slave DataSource!");
         }
 
-        boolean isNowMasterDataSource;
+        boolean isMasterDataSource;
+        String currentQueryDataSourceName = RuntimeQueryDataSource.alias.get();
+        DataSourceType currentDataSourceType = RuntimeQueryDataSource.type.get();
+
         if(ActionMode.INSERT == actionMode || ActionMode.UPDATE == actionMode || ActionMode.DELETE == actionMode) {
             //insert|update|delete on master
-            isNowMasterDataSource = true;
+            isMasterDataSource = true;
 
         } else if(ActionMode.QUERY == actionMode){
-            if(DataSourceType.MASTER == currentThreadQueryDataSourceType.get()) {
+            if(null == currentQueryDataSourceName && DataSourceType.MASTER == currentDataSourceType) {
                 //force to read from master
-                isNowMasterDataSource = true;
+                isMasterDataSource = true;
             }else {
-                isNowMasterDataSource = false;
+                isMasterDataSource = false;
             }
 
         }else {
             throw new RuntimeException("Invalid action mode!");
         }
 
-        if(isNowMasterDataSource) {
-            if(null != masterJdbcTemplate) {
-                return masterJdbcTemplate;
-            }
-            synchronized (object1) {
-                if(null == masterJdbcTemplate) {
-                    if(log.isDebugEnabled()) {
-                        log.debug("JdbcTemplate instance created with master of MagicMultiDataSource!");
-                    }
-                    masterJdbcTemplate = new JdbcTemplate(master);
-                }
-            }
+        if(isMasterDataSource) {
             return masterJdbcTemplate;
         }else {
-            if(null == slaveJdbcTemplates || slaveJdbcTemplates.isEmpty()) {
-                synchronized (object2) {
-                    if(null == slaveJdbcTemplates || slaveJdbcTemplates.isEmpty()) {
-                        slaveJdbcTemplates = new ArrayList<JdbcTemplate>();
-                        for(DataSource slave : slaves) {
-                            if(log.isDebugEnabled()) {
-                                log.debug("JdbcTemplate instance created with slaves of MagicMultiDataSource!");
-                            }
-                            slaveJdbcTemplates.add(new JdbcTemplate(slave));
-                        }
-                    }
-                }
+            if(null != currentQueryDataSourceName) {
+                return slaveJdbcTemplates.get(currentQueryDataSourceName);
+            }else {
+                //random slave
+                int randomSlaveIndex = new Random().nextInt(slaves.size());
+                return slaveJdbcTemplates.get(dataSourceNameList.get(randomSlaveIndex));
             }
-
-            //random slave
-            int randomSlaveIndex = new Random().nextInt(slaves.size());
-            return slaveJdbcTemplates.get(randomSlaveIndex);
         }
 
     }
@@ -96,32 +73,61 @@ public class MagicMultipleDataSource implements MagicDataSource {
     @Override
     public DataSource getJdbcDataSource(ActionMode actionMode) {
         if(CollectionUtils.isEmpty(this.slaves)) {
-            throw new RuntimeException("MagicMultiDataSource must has at least one slave QueryDataSource!");
+            throw new RuntimeException("MagicMultipleDataSource must has at least one slave QueryDataSource!");
         }
         DataSource dataSource;
+        String currentQueryDataSourceName = RuntimeQueryDataSource.alias.get();
+        DataSourceType currentDataSourceType = RuntimeQueryDataSource.type.get();
+
         if(ActionMode.INSERT == actionMode || ActionMode.UPDATE == actionMode || ActionMode.DELETE == actionMode) {
             dataSource = master;
+
         }else if(ActionMode.QUERY == actionMode) {
-            if(DataSourceType.MASTER == currentThreadQueryDataSourceType.get()) {
+            if(null != currentQueryDataSourceName) {
+                dataSource = slaves.get(currentQueryDataSourceName);
+
+            }else if(DataSourceType.MASTER == currentDataSourceType) {
                 dataSource = master;
+
             }else {
                 int randomSlaveIndex = new Random().nextInt(slaves.size());
-                dataSource = slaves.get(randomSlaveIndex);
+                dataSource = slaves.get(dataSourceNameList.get(randomSlaveIndex));
+
             }
+
         }else {
             throw new RuntimeException("Invalid action mode!");
+
         }
         return dataSource;
     }
 
     public void setMaster(DataSource master) {
         this.master = master;
+        this.masterJdbcTemplate = new JdbcTemplate(this.master);
+        if(log.isDebugEnabled()) {
+            log.debug("JdbcTemplate instance created with master of MagicMultipleDataSource!");
+        }
+
     }
 
-    public void setSlaves(List<DataSource> slaves) {
-        this.slaves = slaves;
-        if(CollectionUtils.isEmpty(this.slaves)) {
-            throw new RuntimeException("MagicMultiDataSource must has at least one slave QueryDataSource!");
+    public void setSlaves(Map<String, DataSource> slaves) {
+        if(CollectionUtils.isEmpty(slaves)) {
+            throw new RuntimeException("MagicMultipleDataSource must has at least one slave DataSource!");
         }
+        this.slaves = slaves;
+        slaveJdbcTemplates = new HashMap<String, JdbcTemplate>(slaves.size());
+        dataSourceNameList = new ArrayList<String>(slaves.size());
+        Set<Map.Entry<String, DataSource>> entrySet = slaves.entrySet();
+        for(Map.Entry<String, DataSource> entry : entrySet) {
+            String dsAlias = entry.getKey();
+            DataSource ds = entry.getValue();
+            dataSourceNameList.add(dsAlias);
+            slaveJdbcTemplates.put(dsAlias, new JdbcTemplate(ds));
+            if(log.isDebugEnabled()) {
+                log.debug("JdbcTemplate instance created with slaves of MagicMultipleDataSource!");
+            }
+        }
+
     }
 }

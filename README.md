@@ -308,7 +308,7 @@
 
 - AOP配置
 
-		<bean id="dataSourceAop" class="pers.zr.opensource.magic.dao.aop.MagicQueryDataSourceAop"></bean>
+		<bean id="dataSourceAop" class="pers.zr.opensource.magic.dao.runtime.MagicQueryDataSourceAop"></bean>
 		<aop:config>
 			<aop:aspect ref="dataSourceAop">
 				<aop:around 

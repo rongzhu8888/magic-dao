@@ -19,27 +19,11 @@ public class MagicSingleDataSource implements MagicDataSource {
 
     private DataSource dataSource;
 
-    private volatile JdbcTemplate jdbcTemplate;
+    private JdbcTemplate jdbcTemplate;
 
-    private final Object object = new Object();
 
     @Override
     public JdbcTemplate getJdbcTemplate(ActionMode actionMode) {
-
-        if(null != jdbcTemplate) {
-            return jdbcTemplate;
-        }
-
-        synchronized (object) {
-            if(null == jdbcTemplate) {
-
-                jdbcTemplate = new JdbcTemplate(dataSource);
-
-                if(log.isDebugEnabled()) {
-                    log.debug("JdbcTemplate instance created with MagicSingleDataSource!");
-                }
-            }
-        }
         return jdbcTemplate;
     }
 
@@ -50,5 +34,9 @@ public class MagicSingleDataSource implements MagicDataSource {
 
     public void setDataSource(DataSource dataSource) {
         this.dataSource = dataSource;
+        this.jdbcTemplate = new JdbcTemplate(dataSource);
+        if(log.isDebugEnabled()) {
+            log.debug("JdbcTemplate instance created with MagicSingleDataSource!");
+        }
     }
 }

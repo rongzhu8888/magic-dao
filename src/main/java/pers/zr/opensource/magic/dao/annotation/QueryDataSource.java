@@ -12,6 +12,8 @@ import java.lang.annotation.*;
 @Documented
 public @interface QueryDataSource {
 
+    String alias();
+
     DataSourceType type();
 
 }

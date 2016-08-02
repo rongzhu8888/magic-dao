@@ -81,10 +81,10 @@
 	<bean id="multiDataSource" class="pers.zr.opensource.magic.dao.MagicMultipleDataSource">
 		<property name="master" ref="master" />
 		<property name="slaves">
-			<list>
-				<ref bean="slave1" />
-				<ref bean="slave2" />
-			</list>
+			<map>
+				<entry key="slave1" value-ref="slave1" />
+				<entry key="slave2" value-ref="slave2" />
+			</map>
 		</property>
 	</bean>
 
@@ -107,12 +107,12 @@
 	<!-- 事务注解驱动，标注@Transactional的类和方法将具有事务性 -->
 	<tx:annotation-driven transaction-manager="transactionManager" />
 
-	<!--<bean id="dataSourceAop" class="pers.zr.opensource.magic.dao.aop.MagicQueryDataSourceAop"></bean>
-	<aop:config>
-		<aop:aspect ref="dataSourceAop">
-			<aop:around method="determine"
+	<!--<bean id="dataSourceAop" class="pers.zr.opensource.magic.dao.runtimetime.MagicQueryDataSourceAop"></bean>
+	<runtime:config>
+		<runtime:aspect ref="dataSourceAop">
+			<runtime:around method="determine"
 						pointcut="execution(* demo.pers.zr.magic.dao..*Service*.*(..))" />
-		</aop:aspect>
-	</aop:config>-->
+		</runtime:aspect>
+	</runtime:config>-->
 
 </beans>
