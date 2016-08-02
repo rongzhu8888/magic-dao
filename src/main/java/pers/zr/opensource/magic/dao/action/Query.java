@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by zhurong on 2016-4-28.
  */
-public class Query extends ConditionAction {
+public class Query extends ConditionalAction {
 
     private List<String> queryFields;
 

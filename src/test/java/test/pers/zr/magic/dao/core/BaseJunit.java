@@ -52,8 +52,8 @@ public class BaseJunit {
         keyList.add("order_id");
         table.setKeys(keyList);
 
-        table.setTableShardHandler(new MyTableShardHandler());
-        table.setTableShardStrategy(new TableShardStrategy("tab_order", 32, new String[]{"user_id"}, "_"));
+        table.setTableShardHandler(new DefaultTableShardHandler());
+        table.setTableShardStrategy(new TableShardStrategy("tab_order", 32, new String[]{"user_id", "xxx_id"}, "_"));
 
     }
 }

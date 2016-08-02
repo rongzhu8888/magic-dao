@@ -5,7 +5,7 @@ import pers.zr.opensource.magic.dao.constants.ActionMode;
 /**
  * Created by zhurong on 2016-4-28.
  */
-public class Delete extends ConditionAction {
+public class Delete extends ConditionalAction {
 
     @Override
     public String getSql() {

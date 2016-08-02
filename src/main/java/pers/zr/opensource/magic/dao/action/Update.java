@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Created by zhurong on 2016-4-28.
  */
-public class Update extends  ConditionAction {
+public class Update extends ConditionalAction {
 
     private Map<String, Object> updateFields;
 

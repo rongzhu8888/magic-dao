@@ -12,7 +12,7 @@ import java.util.*;
 /**
  * Created by zhurong on 2016/4/30.
  */
-public abstract class ConditionAction extends Action {
+public abstract class ConditionalAction extends Action {
 
     private Collection<Matcher> conditions = new ArrayList<Matcher>();
 
@@ -20,12 +20,12 @@ public abstract class ConditionAction extends Action {
     private List<Object> conParams = null;
     private String realTableName = null;
 
-    public <T extends ConditionAction>T addConditions(Collection<Matcher> matcheres) {
+    public <T extends ConditionalAction>T addConditions(Collection<Matcher> matcheres) {
         conditions.addAll(matcheres);
         return (T) this;
     }
 
-    public <T extends ConditionAction>T addCondition(Matcher matcher) {
+    public <T extends ConditionalAction>T addCondition(Matcher matcher) {
         conditions.add(matcher);
         return (T) this;
     }
@@ -49,6 +49,7 @@ public abstract class ConditionAction extends Action {
             //get actual table name when shard exist
             TableShardStrategy tableShardStrategy = table.getTableShardStrategy();
             TableShardHandler tableShardHandler = table.getTableShardHandler();
+
             if(null != tableShardHandler && null != tableShardStrategy) {
                 String[] shardColumns = tableShardStrategy.getShardColumns();
                 List<String> shardColumnList = Arrays.asList(shardColumns);
@@ -60,6 +61,7 @@ public abstract class ConditionAction extends Action {
                     }
                 }
                 realTableName = tableShardHandler.getRealTableName(tableShardStrategy,shardColumnValueList.toArray());
+
                 if(tableShardStrategy != null && this.realTableName == null) {
                     throw new RuntimeException("Failed to get real name of shard table!");
                 }

@@ -28,7 +28,9 @@ public class DeleteTest extends BaseJunit{
     public void testGetSqlAndParams() {
         Delete delete = deleteBuilder.build();
         Matcher matcher = new EqualsMatcher("user_id", 999999999);
+        Matcher matcher2 = new EqualsMatcher("xxx_id", 999999999);
         delete.addCondition(matcher);
+        delete.addCondition(matcher2);
         System.out.println(delete.getSql());
         System.out.println(delete.getParams()[0]);
 
