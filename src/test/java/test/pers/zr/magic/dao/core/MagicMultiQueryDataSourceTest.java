@@ -26,9 +26,9 @@ public class MagicMultiQueryDataSourceTest {
 
         dataSource.setMaster(getMaster());
 
-        List<DataSource> slaveList = new ArrayList<>();
-        slaveList.add(getSlave());
-        dataSource.setSlaves(slaveList);
+//        List<DataSource> slaveList = new ArrayList<>();
+//        slaveList.add(getSlave());
+//        dataSource.setSlaves(slaveList);
 
     }
 

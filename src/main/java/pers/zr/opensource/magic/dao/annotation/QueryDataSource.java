@@ -12,8 +12,8 @@ import java.lang.annotation.*;
 @Documented
 public @interface QueryDataSource {
 
-    String alias();
+    String alias() default "";
 
-    DataSourceType type();
+    DataSourceType type() default DataSourceType.SLAVE;
 
 }

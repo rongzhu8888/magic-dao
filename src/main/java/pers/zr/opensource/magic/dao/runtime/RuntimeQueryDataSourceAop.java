@@ -31,9 +31,8 @@ public class RuntimeQueryDataSourceAop {
 
             //set alias of  current thread query datasource
             String currentDataSourceAlias = queryDataSourceAnnotation.alias();
-            RuntimeQueryDataSource.alias.set(currentDataSourceAlias);
 
-            if(currentDataSourceAlias == null) {
+            if(null == currentDataSourceAlias || "".equals(currentDataSourceAlias)) {
                 //set type of current thread query dataSource
                 DataSourceType currentDataSourceType = (null != queryDataSourceAnnotation) ? queryDataSourceAnnotation.type() : DataSourceType.SLAVE;
                 RuntimeQueryDataSource.type.set(currentDataSourceType);
@@ -41,6 +40,7 @@ public class RuntimeQueryDataSourceAop {
                     log.debug("invoke service=" + clazz.getName() + "." + method.getName() + ", QueryDataSource=[type:" + currentDataSourceType + "]");
                 }
             }else {
+                RuntimeQueryDataSource.alias.set(currentDataSourceAlias);
                 if(log.isDebugEnabled()) {
                     log.debug("invoke service=" + clazz.getName() + "." + method.getName() + ", QueryDataSource=[alias:" + currentDataSourceAlias + "]");
                 }
