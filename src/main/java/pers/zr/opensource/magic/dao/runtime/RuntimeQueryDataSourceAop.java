@@ -20,29 +20,50 @@ public class RuntimeQueryDataSourceAop {
 
     public Object determine(ProceedingJoinPoint pjp) {
         try {
-            MethodSignature signature = (MethodSignature) pjp.getSignature();
-            Method method = signature.getMethod();
-            Class<?> clazz = method.getDeclaringClass();
+            QueryDataSource queryDataSourceAnnotation = null;
 
-            QueryDataSource queryDataSourceAnnotation = method.getAnnotation(QueryDataSource.class);
+            Object target = pjp.getTarget();
+            MethodSignature methodSignature = (MethodSignature) pjp.getSignature();
+
+            //method in class
+            Method methodImpl = target.getClass().getMethod(methodSignature.getName(), methodSignature.getParameterTypes());
+            //method in interface
+            Method methodInterface = methodSignature.getMethod();
+
+            //current class
+            Class<?> clazzImpl = pjp.getTarget().getClass();
+            //current interface
+            Class<?> clazzInterface = methodInterface.getDeclaringClass();
+
+            //get annotation of method
+            queryDataSourceAnnotation = methodImpl.getAnnotation(QueryDataSource.class) != null
+                    ? methodImpl.getAnnotation(QueryDataSource.class)
+                    : methodInterface.getAnnotation(QueryDataSource.class);
+
+
             if(null == queryDataSourceAnnotation) {
-                queryDataSourceAnnotation = clazz.getAnnotation(QueryDataSource.class);
+                //get annotation of class or interface
+                queryDataSourceAnnotation = clazzImpl.getAnnotation(QueryDataSource.class) != null
+                        ? clazzImpl.getAnnotation(QueryDataSource.class)
+                        : clazzInterface.getAnnotation(QueryDataSource.class);
+
             }
+
 
             //set alias of  current thread query datasource
             String currentDataSourceAlias = queryDataSourceAnnotation.alias();
-
             if(null == currentDataSourceAlias || "".equals(currentDataSourceAlias)) {
                 //set type of current thread query dataSource
                 DataSourceType currentDataSourceType = (null != queryDataSourceAnnotation) ? queryDataSourceAnnotation.type() : DataSourceType.SLAVE;
+                System.out.println(currentDataSourceType.toString());
                 RuntimeQueryDataSource.type.set(currentDataSourceType);
                 if(log.isDebugEnabled()) {
-                    log.debug("invoke service=" + clazz.getName() + "." + method.getName() + ", QueryDataSource=[type:" + currentDataSourceType + "]");
+                    log.debug("invoke service=" + clazzImpl.getName() + "." + methodImpl.getName() + ", QueryDataSource=[type:" + currentDataSourceType + "]");
                 }
             }else {
                 RuntimeQueryDataSource.alias.set(currentDataSourceAlias);
                 if(log.isDebugEnabled()) {
-                    log.debug("invoke service=" + clazz.getName() + "." + method.getName() + ", QueryDataSource=[alias:" + currentDataSourceAlias + "]");
+                    log.debug("invoke service=" + clazzImpl.getName() + "." + methodImpl.getName() + ", QueryDataSource=[alias:" + currentDataSourceAlias + "]");
                 }
             }
             return pjp.proceed();

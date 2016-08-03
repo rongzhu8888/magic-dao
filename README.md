@@ -351,7 +351,7 @@ MagicDao接口的泛型为<KEY, ENTITY>，具体用法如下：
 			<aop:aspect ref="dataSourceAop">
 				<aop:around
 					method="determine"
-					pointcut="execution(* demo.xxx..*ServiceImpl*.*(..))" /> //这里视情况而定，无需拦截所有的ServiceImpl
+					pointcut="execution(* demo.xxx..*ServiceImpl*.*(..))" /> <!-- 这里视情况而定，无需拦截所有的ServiceImpl -->
 			</aop:aspect>
 		</aop:config>
 
@@ -362,6 +362,8 @@ MagicDao接口的泛型为<KEY, ENTITY>，具体用法如下：
 (2) 方法级别的注解较类级别优先级高，如果方法和类同时具有@QueryDataSource注解，则取方法级别注解；
 
 (3) @QueryDataSource的alias属性比type优先级高，如果指定了alias，则忽略type属性。
+
+(4) @QueryDataSource同时支持在接口或者实现类中注解
 
 
 ###3.6 分表 ###
